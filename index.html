@@ -1,6 +1,51 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+<script>
+(function() {
+  // 从URL获取expire参数（例如 ?expire=1740506400）
+  const urlParams = new URLSearchParams(window.location.search);
+  const expire = urlParams.get('expire');
+
+  // 如果没有expire参数，直接显示错误并停止
+  if (!expire) {
+    document.body.innerHTML = '<div style="text-align:center; margin-top:50px; font-family: sans-serif; color:#9f7aea; font-size:20px;">🔒 无效的访问链接</div>';
+    throw new Error('缺少过期参数');
+  }
+
+  const now = Math.floor(Date.now() / 1000);
+  const expireTime = parseInt(expire, 10);
+
+  if (isNaN(expireTime) || expireTime <= 0) {
+    document.body.innerHTML = '<div style="text-align:center; margin-top:50px; font-family: sans-serif; color:#9f7aea; font-size:20px;">⚠️ 链接格式错误</div>';
+    throw new Error('过期参数格式错误');
+  }
+
+  if (now > expireTime) {
+    document.body.innerHTML = '<div style="text-align:center; margin-top:50px; font-family: sans-serif; color:#9f7aea; font-size:20px;">⏳ 此链接已过期，请重新购买</div>';
+    throw new Error('链接已过期');
+  }
+
+  const remaining = expireTime - now;
+  const remainingMinutes = Math.floor(remaining / 60);
+  const remainingSeconds = remaining % 60;
+
+  const timerDiv = document.createElement('div');
+  timerDiv.style.position = 'sticky';
+  timerDiv.style.top = '0';
+  timerDiv.style.backgroundColor = '#f3e8ff';  // 浅紫色背景
+  timerDiv.style.color = '#6b4e8f';            // 深紫色文字
+  timerDiv.style.padding = '10px';
+  timerDiv.style.textAlign = 'center';
+  timerDiv.style.fontSize = '14px';
+  timerDiv.style.borderBottom = '2px solid #d0b2f0';
+  timerDiv.style.zIndex = '1000';
+  timerDiv.innerHTML = `⏰ 本链接剩余有效时间：${remainingMinutes}分${remainingSeconds}秒（过期后链接将自动失效）`;
+
+  document.body.prepend(timerDiv);
+})();
+</script>
+
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>恋爱占有欲指数评估</title>
@@ -26,7 +71,7 @@
       justify-content: space-between;
       align-items: center;
       padding: 12px 0;
-      border-bottom: 1px solid #f0e6e9;
+      border-bottom: 1px solid #e9d5ff; /* 淡紫色边框 */
       margin-bottom: 24px;
     }
     .header-left {
@@ -38,12 +83,8 @@
       color: #666;
       font-size: 18px;
     }
-    .header-left .title {
-      font-weight: 600;
-      color: #e62e6b;
-    }
     .header-right .btn-back {
-      border: 1px solid #ddd;
+      border: 1px solid #d0b2f0;
       background: #fff;
       color: #666;
       padding: 6px 12px;
@@ -58,7 +99,7 @@
     }
     .page-title {
       text-align: center;
-      color: #e62e6b;
+      color: #9f7aea; /* 主紫色 */
       font-size: 24px;
       font-weight: 700;
       margin-bottom: 8px;
@@ -86,7 +127,7 @@
       margin-bottom: 16px;
     }
     .section-title .icon {
-      color: #e62e6b;
+      color: #9f7aea;
     }
     .consent-item {
       margin-bottom: 20px;
@@ -116,11 +157,11 @@
     .checkbox-item input {
       width: 16px;
       height: 16px;
-      accent-color: #e62e6b;
+      accent-color: #9f7aea;
     }
     .warning-box {
-      background: #fff5f7;
-      border-left: 4px solid #e62e6b;
+      background: #f9f2ff;
+      border-left: 4px solid #9f7aea;
       padding: 12px 16px;
       margin: 16px 0;
       font-size: 13px;
@@ -146,7 +187,7 @@
       border: 1px solid #ddd;
     }
     .btn-primary {
-      background: #e62e6b;
+      background: #9f7aea;
       color: #fff;
     }
     .progress-bar {
@@ -157,7 +198,7 @@
     }
     .progress-bar .fill {
       height: 100%;
-      background: #e62e6b;
+      background: #9f7aea;
       border-radius: 2px;
     }
     .form-group {
@@ -185,7 +226,7 @@
     .radio-item input {
       width: 16px;
       height: 16px;
-      accent-color: #e62e6b;
+      accent-color: #9f7aea;
     }
     .optional-tag {
       font-size: 12px;
@@ -205,13 +246,6 @@
       gap: 12px;
       margin-bottom: 20px;
     }
-    .progress-block {
-      flex: 1;
-      padding: 12px;
-      border-radius: 4px;
-      text-align: center;
-      font-size: 14px;
-    }
     .progress-block.answered {
       background: #e8f5e9;
       color: #2e7d32;
@@ -225,8 +259,8 @@
       color: #c62828;
     }
     .question-item {
-      background: #fff5f7;
-      border: 1px solid #f8cdd7;
+      background: #f9f2ff;
+      border: 1px solid #e9d5ff;
       border-radius: 6px;
       padding: 16px;
       margin-bottom: 16px;
@@ -238,7 +272,7 @@
       margin-bottom: 12px;
     }
     .required-tag {
-      background: #e62e6b;
+      background: #9f7aea;
       color: #fff;
       font-size: 12px;
       padding: 2px 6px;
@@ -266,13 +300,13 @@
       cursor: pointer;
     }
     .question-option.selected {
-      border-color: #e62e6b;
-      background: #fff5f7;
-      color: #e62e6b;
+      border-color: #9f7aea;
+      background: #f9f2ff;
+      color: #9f7aea;
     }
     .required-hint {
       font-size: 12px;
-      color: #e62e6b;
+      color: #9f7aea;
       margin-top: 8px;
     }
     .result-header {
@@ -283,8 +317,8 @@
       width: 48px;
       height: 48px;
       border-radius: 50%;
-      background: #fff5f7;
-      color: #e62e6b;
+      background: #f9f2ff;
+      color: #9f7aea;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -294,12 +328,12 @@
     .rpi-score {
       font-size: 48px;
       font-weight: 700;
-      color: #e62e6b;
+      color: #9f7aea;
       margin: 8px 0;
     }
     .rpi-level {
       font-size: 16px;
-      color: #e62e6b;
+      color: #9f7aea;
       font-weight: 500;
     }
     .rpi-bar-container {
@@ -311,7 +345,7 @@
     }
     .rpi-bar-fill {
       height: 100%;
-      background: #e62e6b;
+      background: #9f7aea;
       border-radius: 4px;
       width: 0%;
     }
@@ -355,7 +389,7 @@
     }
     .dimension-bar-fill {
       height: 100%;
-      background: #e62e6b;
+      background: #9f7aea;
       border-radius: 3px;
       width: 0%;
     }
@@ -406,19 +440,19 @@
       width: 60px;
       height: 60px;
       border-radius: 50%;
-      background: #fff5f7;
-      color: #e62e6b;
+      background: #f9f2ff;
+      color: #9f7aea;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 32px;
       margin: 0 auto 16px;
-      border: 2px solid #e62e6b;
+      border: 2px solid #9f7aea;
     }
     .personality-title {
       font-size: 24px;
       font-weight: 700;
-      color: #e62e6b;
+      color: #9f7aea;
       margin-bottom: 8px;
     }
     .personality-subtitle {
@@ -446,7 +480,7 @@
     }
     .feature-list li::before {
       content: "•";
-      color: #e62e6b;
+      color: #9f7aea;
       font-weight: 700;
     }
     .pro-list li::before {
@@ -495,7 +529,7 @@
       font-size: 14px;
     }
     .zodiac-card {
-      background: #fff5f7;
+      background: #f9f2ff;
       border-radius: 8px;
       padding: 16px;
       margin: 16px 0;
@@ -509,8 +543,8 @@
     }
     .zodiac-tag {
       background: #fff;
-      color: #e62e6b;
-      border: 1px solid #e62e6b;
+      color: #9f7aea;
+      border: 1px solid #9f7aea;
       border-radius: 12px;
       padding: 4px 8px;
       font-size: 12px;
@@ -564,7 +598,6 @@
     <header>
       <div class="header-left">
         <span class="icon">🏠</span>
-        <span class="title">❤️ 给自己测</span>
       </div>
       <div class="header-right">
         <button class="btn-back" onclick="goBack()">← 返回</button>
@@ -624,7 +657,7 @@
 
         <div class="btn-group">
           <button class="btn btn-secondary" onclick="window.location.reload()">我不同意</button>
-          <button class="btn btn-primary" onclick="nextPage('page-basic')">我同意并开始评估</button>
+          <button class="btn btn-primary" onclick="checkConsentAndProceed()">我同意并开始评估</button>
         </div>
 
         <div style="font-size: 12px; color: #999; text-align: center; margin-top: 24px;">
@@ -653,7 +686,7 @@
             <div class="radio-item"><input type="radio" name="age" value="under18"> 18岁以下</div>
             <div class="radio-item"><input type="radio" name="age" value="18-24"> 18-24岁</div>
             <div class="radio-item"><input type="radio" name="age" value="25-29"> 25-29岁</div>
-            <div class="radio-item"><input type="radio" name="age" value="30-34" checked> 30-34岁</div>
+            <div class="radio-item"><input type="radio" name="age" value="30-34"> 30-34岁</div>
             <div class="radio-item"><input type="radio" name="age" value="35-39"> 35-39岁</div>
             <div class="radio-item"><input type="radio" name="age" value="over40"> 40岁以上</div>
           </div>
@@ -721,7 +754,7 @@
 
         <div class="btn-group">
           <button class="btn btn-secondary" onclick="prevPage('page-consent')">← 返回</button>
-          <button class="btn btn-primary" onclick="nextPage('page-questions')">继续评估 →</button>
+          <button class="btn btn-primary" onclick="validateBasicInfo()">继续评估 →</button>
         </div>
       </div>
     </div>
@@ -864,6 +897,36 @@
       }
     }
 
+    // 检查知情同意书是否全部勾选
+    function checkConsentAndProceed() {
+      const purpose = document.getElementById('consent-purpose').checked;
+      const privacy = document.getElementById('consent-privacy').checked;
+      const voluntary = document.getElementById('consent-voluntary').checked;
+      const nonDiagnostic = document.getElementById('consent-non-diagnostic').checked;
+      if (purpose && privacy && voluntary && nonDiagnostic) {
+        nextPage('page-basic');
+      } else {
+        alert('请勾选所有“我理解”选项以表示您同意知情同意书的内容。');
+      }
+    }
+
+    // 验证基本信息必填项
+    function validateBasicInfo() {
+      const ageSelected = document.querySelector('input[name="age"]:checked');
+      const genderSelected = document.querySelector('input[name="gender"]:checked');
+      const statusSelected = document.querySelector('input[name="relationship-status"]:checked');
+      if (!ageSelected || !genderSelected || !statusSelected) {
+        alert('请填写所有必填项（年龄段、性别、恋爱状态）');
+        return;
+      }
+      userInfo.age = ageSelected.value;
+      userInfo.gender = genderSelected.value;
+      userInfo.zodiac = document.querySelector('input[name="zodiac"]:checked')?.value || 'unknown';
+      userInfo.relationshipStatus = statusSelected.value;
+      userInfo.duration = document.querySelector('input[name="relationship-duration"]:checked')?.value || '';
+      nextPage('page-questions');
+    }
+
     // 渲染所有题目
     function renderQuestions() {
       const container = document.getElementById('questions-container');
@@ -897,11 +960,9 @@
 
     // 选项点击
     window.selectQuestionOption = function(el, qIndex) {
-      // 移除同组其他选中
       const parent = el.parentElement;
       parent.querySelectorAll('.question-option').forEach(opt => opt.classList.remove('selected'));
       el.classList.add('selected');
-      // 存储答案
       const optIndex = parseInt(el.dataset.optindex);
       answers[qIndex] = optIndex;
       updateStats();
@@ -925,7 +986,6 @@
         alert('还有未回答的题目，请完成所有题目后再提交。');
         return;
       }
-      // 收集基本信息
       const ageEl = document.querySelector('input[name="age"]:checked');
       const genderEl = document.querySelector('input[name="gender"]:checked');
       const zodiacEl = document.querySelector('input[name="zodiac"]:checked');
@@ -938,21 +998,18 @@
       userInfo.relationshipStatus = statusEl ? statusEl.value : '';
       userInfo.duration = durationEl ? durationEl.value : '';
 
-      // 计算分数
       calculateResult();
     }
 
     // 计算分数并显示结果页
     function calculateResult() {
-      // 各维度总分 (每题1-5分)
       let dimScores = { C: 0, J: 0, Y: 0, G: 0 };
       for (let i = 0; i < 40; i++) {
         const dim = questions[i].dim;
         dimScores[dim] += answers[i] + 1;
       }
 
-      // RPI总分 (0-100)
-      const totalRaw = dimScores.C + dimScores.J + dimScores.Y + dimScores.G; // 范围40-200
+      const totalRaw = dimScores.C + dimScores.J + dimScores.Y + dimScores.G;
       const rpi = Math.round(((totalRaw - 40) / 160) * 100);
       let level = '';
       if (rpi < 30) level = '很低（自由自在）';
@@ -960,13 +1017,11 @@
       else if (rpi < 70) level = '较高（在意对方）';
       else level = '很高（爱到极致）';
 
-      // Z分数模拟 (以30为均值, 10为标准差)
       const zC = ((dimScores.C - 30) / 10).toFixed(2);
       const zJ = ((dimScores.J - 30) / 10).toFixed(2);
       const zY = ((dimScores.Y - 30) / 10).toFixed(2);
       const zG = ((dimScores.G - 30) / 10).toFixed(2);
 
-      // 依恋类型判定
       let attachmentType = '', attachmentSub = '', features = [], strengths = [], challenges = [], advice = '';
       if (dimScores.C < 30 && dimScores.J < 30 && dimScores.Y < 30 && dimScores.G < 30) {
         attachmentType = '安全型依恋';
@@ -998,7 +1053,6 @@
         advice = '建立稳定的信任感，学习一致的情感表达。心理咨询可以帮助探索恐惧的根源。';
       }
 
-      // 星座描述
       const zodiacMap = {
         'aries': { name: '白羊座', tags: ['热情冲动', '占有欲直接'], desc: '白羊座的你在恋爱中充满热情和冲动，占有欲表现为直接和主动。你希望伴侣能跟上你的节奏，有时会显得急躁。', advice: '学会控制冲动，多倾听对方的需求。' },
         'taurus': { name: '金牛座', tags: ['稳定执着', '追求安全感'], desc: '金牛座的你在恋爱中稳定而执着，占有欲体现在对安全感的追求上。你希望关系稳固，不喜欢变动。', advice: '学会灵活变通，不要过于固执。' },
@@ -1016,7 +1070,6 @@
       };
       const zodiac = zodiacMap[userInfo.zodiac] || zodiacMap['unknown'];
 
-      // 构建结果页HTML
       const resultHTML = `
         <div class="result-header">
           <div class="result-icon">❤️</div>
@@ -1285,7 +1338,7 @@
               <span class="zodiac-tag">${zodiac.name}</span>
               ${zodiac.tags.map(t => `<span class="zodiac-tag">${t}</span>`).join('')}
             </div>
-            <h4 style="font-size: 14px; color: #e62e6b; margin: 12px 0;">${zodiac.name}在恋爱中的特点</h4>
+            <h4 style="font-size: 14px; color: #9f7aea; margin: 12px 0;">${zodiac.name}在恋爱中的特点</h4>
             <p style="font-size: 14px; color: #666; line-height: 1.6;">${zodiac.desc}</p>
             <h4 style="font-size: 14px; color: #333; margin: 16px 0 8px;">给你的星座建议</h4>
             <p style="font-size: 14px; color: #666;">${zodiac.advice}</p>
@@ -1325,10 +1378,8 @@
       document.getElementById('page-result').innerHTML = resultHTML;
       nextPage('page-result');
 
-      // 绘制雷达图
       setTimeout(() => {
         drawRadar('radar-dim', [dimScores.C/50, dimScores.J/50, dimScores.Y/50, dimScores.G/50], ['控制', '嫉妒', '依赖', '不安']);
-        // 依恋类型雷达图（四个类型：安全、焦虑、回避、恐惧）
         const safe = Math.max(0, 1 - (dimScores.C + dimScores.J + dimScores.Y + dimScores.G) / 200);
         const anxious = Math.min(1, (dimScores.Y + dimScores.G) / 100);
         const avoid = Math.min(1, (dimScores.C + dimScores.J) / 100);
@@ -1337,7 +1388,6 @@
       }, 50);
     }
 
-    // 绘制雷达图
     function drawRadar(canvasId, values, labels) {
       const canvas = document.getElementById(canvasId);
       if (!canvas) return;
@@ -1346,9 +1396,8 @@
       ctx.clearRect(0, 0, w, h);
       const centerX = w/2, centerY = h/2;
       const radius = 70;
-      const angles = [0, Math.PI/2, Math.PI, 3*Math.PI/2]; // 右、下、左、上
+      const angles = [0, Math.PI/2, Math.PI, 3*Math.PI/2];
 
-      // 画网格
       ctx.strokeStyle = '#ddd';
       ctx.lineWidth = 1;
       for (let level = 0.2; level <= 1; level += 0.2) {
@@ -1364,7 +1413,6 @@
         ctx.stroke();
       }
 
-      // 画数据
       ctx.beginPath();
       for (let i = 0; i < values.length; i++) {
         const x = centerX + radius * values[i] * Math.cos(angles[i]);
@@ -1373,13 +1421,12 @@
         else ctx.lineTo(x, y);
       }
       ctx.closePath();
-      ctx.fillStyle = 'rgba(230, 46, 107, 0.3)';
+      ctx.fillStyle = 'rgba(159, 122, 234, 0.3)'; // 淡紫色半透明
       ctx.fill();
-      ctx.strokeStyle = '#e62e6b';
+      ctx.strokeStyle = '#9f7aea';
       ctx.lineWidth = 2;
       ctx.stroke();
 
-      // 标签
       ctx.fillStyle = '#666';
       ctx.font = '12px sans-serif';
       ctx.textAlign = 'center';
@@ -1394,10 +1441,7 @@
       alert('分享功能已触发，可在此处实现分享逻辑');
     }
 
-    // 初始化：默认同意页
-    window.onload = function() {
-      // 无额外操作
-    };
+    window.onload = function() {};
   </script>
 </body>
 </html>
