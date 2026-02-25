@@ -169,17 +169,19 @@
     }
     .btn-group {
       display: flex;
-      justify-content: flex-end;
       gap: 12px;
       margin-top: 24px;
     }
     .btn {
+      flex: 1; /* 让按钮均分宽度 */
       padding: 10px 20px;
       border-radius: 4px;
       font-size: 14px;
       font-weight: 500;
       cursor: pointer;
       border: none;
+      white-space: nowrap; /* 防止文字换行 */
+      text-align: center;
     }
     .btn-secondary {
       background: #fff;
@@ -246,6 +248,13 @@
       gap: 12px;
       margin-bottom: 20px;
     }
+    .progress-block {
+      flex: 1; /* 三个卡片均分宽度 */
+      padding: 12px;
+      border-radius: 4px;
+      text-align: center;
+      font-size: 14px;
+    }
     .progress-block.answered {
       background: #e8f5e9;
       color: #2e7d32;
@@ -286,18 +295,21 @@
       display: flex;
       gap: 8px;
       margin-top: 12px;
-      flex-wrap: wrap;
+      flex-wrap: nowrap; /* 强制不换行 */
     }
     .question-option {
-      flex: 1;
-      min-width: 60px;
+      flex: 1 1 0%; /* 均分剩余空间 */
+      min-width: 0; /* 允许内容收缩 */
       text-align: center;
-      padding: 8px 4px;
+      padding: 6px 2px;
       border: 1px solid #ddd;
       border-radius: 4px;
-      font-size: 13px;
+      font-size: 12px; /* 稍小字体以适应窄屏 */
       color: #666;
       cursor: pointer;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .question-option.selected {
       border-color: #9f7aea;
@@ -421,8 +433,8 @@
       margin-bottom: 12px;
     }
     .radar-canvas {
-      width: 200px;
-      height: 200px;
+      width: 250px;
+      height: 250px;
       display: block;
       margin: 0 auto;
       background: #fafafa;
@@ -1092,7 +1104,6 @@
             <p style="font-size: 14px; color: #666; line-height: 1.6;">
               你的恋爱占有欲指数为 ${rpi} 分，处于「${level}」水平。<br>
               这表明你在恋爱关系中占有欲${rpi < 30 ? '较低，倾向于给予伴侣充分的自由空间' : rpi < 50 ? '适中，能平衡亲密与自由' : rpi < 70 ? '较强，需要留意控制倾向' : '极强，可能影响关系质量'}。<br>
-              在以下维度上得分较高：${dimScores.Y > 35 ? '情感依赖' : ''} ${dimScores.G > 35 ? '关系不安' : ''} ${dimScores.C > 35 ? '控制欲望' : ''} ${dimScores.J > 35 ? '嫉妒强度' : ''}。<br>
               这些特点可能影响你在恋爱关系中的行为模式和情感体验。
             </p>
           </div>
@@ -1150,12 +1161,12 @@
             <div class="radar-container">
               <div class="radar-card">
                 <div class="radar-title">恋爱占有欲雷达图</div>
-                <canvas id="radar-dim" class="radar-canvas" width="200" height="200"></canvas>
+                <canvas id="radar-dim" class="radar-canvas" width="250" height="250"></canvas>
                 <div style="font-size: 12px; color: #999; margin-top: 8px;">T分数范围: 20-80, 50为平均水平</div>
               </div>
               <div class="radar-card">
                 <div class="radar-title">依恋类型雷达图</div>
-                <canvas id="radar-attach" class="radar-canvas" width="200" height="200"></canvas>
+                <canvas id="radar-attach" class="radar-canvas" width="250" height="250"></canvas>
                 <div style="font-size: 12px; color: #999; margin-top: 8px;">主导类型: ${attachmentType.split('型')[0]}</div>
               </div>
             </div>
@@ -1370,7 +1381,7 @@
           <div class="btn-group" style="margin-top: 24px;">
             <button class="btn btn-secondary" onclick="window.location.reload()">返回首页</button>
             <button class="btn btn-secondary" onclick="window.location.reload()">重新测评</button>
-            <button class="btn btn-primary" onclick="shareResult()">分享结果</button>
+            <!-- 移除了分享结果按钮 -->
           </div>
         </div>
       `;
@@ -1392,12 +1403,13 @@
       const canvas = document.getElementById(canvasId);
       if (!canvas) return;
       const ctx = canvas.getContext('2d');
-      const w = 200, h = 200;
+      const w = 250, h = 250;
       ctx.clearRect(0, 0, w, h);
       const centerX = w/2, centerY = h/2;
       const radius = 70;
       const angles = [0, Math.PI/2, Math.PI, 3*Math.PI/2];
 
+      // 画网格
       ctx.strokeStyle = '#ddd';
       ctx.lineWidth = 1;
       for (let level = 0.2; level <= 1; level += 0.2) {
@@ -1413,6 +1425,7 @@
         ctx.stroke();
       }
 
+      // 画数据
       ctx.beginPath();
       for (let i = 0; i < values.length; i++) {
         const x = centerX + radius * values[i] * Math.cos(angles[i]);
@@ -1421,18 +1434,21 @@
         else ctx.lineTo(x, y);
       }
       ctx.closePath();
-      ctx.fillStyle = 'rgba(159, 122, 234, 0.3)'; // 淡紫色半透明
+      ctx.fillStyle = 'rgba(159, 122, 234, 0.3)';
       ctx.fill();
       ctx.strokeStyle = '#9f7aea';
       ctx.lineWidth = 2;
       ctx.stroke();
 
+      // 画标签（调整位置确保不被截断）
       ctx.fillStyle = '#666';
       ctx.font = '12px sans-serif';
       ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      const labelRadius = radius + 20; // 适当增加距离
       for (let i = 0; i < labels.length; i++) {
-        const x = centerX + (radius + 15) * Math.cos(angles[i]);
-        const y = centerY + (radius + 15) * Math.sin(angles[i]);
+        const x = centerX + labelRadius * Math.cos(angles[i]);
+        const y = centerY + labelRadius * Math.sin(angles[i]);
         ctx.fillText(labels[i], x, y);
       }
     }
