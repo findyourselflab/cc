@@ -33,8 +33,8 @@
   const timerDiv = document.createElement('div');
   timerDiv.style.position = 'sticky';
   timerDiv.style.top = '0';
-  timerDiv.style.backgroundColor = '#f3e8ff';  // 浅紫色背景
-  timerDiv.style.color = '#6b4e8f';            // 深紫色文字
+  timerDiv.style.backgroundColor = '#f3e8ff';
+  timerDiv.style.color = '#6b4e8f';
   timerDiv.style.padding = '10px';
   timerDiv.style.textAlign = 'center';
   timerDiv.style.fontSize = '14px';
@@ -71,7 +71,7 @@
       justify-content: space-between;
       align-items: center;
       padding: 12px 0;
-      border-bottom: 1px solid #e9d5ff; /* 淡紫色边框 */
+      border-bottom: 1px solid #e9d5ff;
       margin-bottom: 24px;
     }
     .header-left {
@@ -99,7 +99,7 @@
     }
     .page-title {
       text-align: center;
-      color: #9f7aea; /* 主紫色 */
+      color: #9f7aea;
       font-size: 24px;
       font-weight: 700;
       margin-bottom: 8px;
@@ -173,14 +173,14 @@
       margin-top: 24px;
     }
     .btn {
-      flex: 1; /* 让按钮均分宽度 */
+      flex: 1;
       padding: 10px 20px;
       border-radius: 4px;
       font-size: 14px;
       font-weight: 500;
       cursor: pointer;
       border: none;
-      white-space: nowrap; /* 防止文字换行 */
+      white-space: nowrap;
       text-align: center;
     }
     .btn-secondary {
@@ -249,7 +249,7 @@
       margin-bottom: 20px;
     }
     .progress-block {
-      flex: 1; /* 三个卡片均分宽度 */
+      flex: 1;
       padding: 12px;
       border-radius: 4px;
       text-align: center;
@@ -276,17 +276,11 @@
     }
     .question-header {
       display: flex;
-      align-items: center;
-      gap: 8px;
+      align-items: baseline;  /* 改为基线对齐，去除标签后与文本更好对齐 */
+      gap: 4px;
       margin-bottom: 12px;
     }
-    .required-tag {
-      background: #9f7aea;
-      color: #fff;
-      font-size: 12px;
-      padding: 2px 6px;
-      border-radius: 4px;
-    }
+    /* 已移除 required-tag 样式 */
     .question-text {
       font-size: 14px;
       color: #333;
@@ -295,21 +289,21 @@
       display: flex;
       gap: 8px;
       margin-top: 12px;
-      flex-wrap: nowrap; /* 强制不换行 */
+      flex-wrap: nowrap;
     }
     .question-option {
-      flex: 1 1 0%; /* 均分剩余空间 */
-      min-width: 0; /* 允许内容收缩 */
+      flex: 1 1 0%;
+      min-width: 0;
       text-align: center;
       padding: 6px 2px;
       border: 1px solid #ddd;
       border-radius: 4px;
-      font-size: 12px; /* 稍小字体以适应窄屏 */
+      font-size: clamp(10px, 3vw, 14px); /* 自适应字体，最小10px，最大14px */
       color: #666;
       cursor: pointer;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      white-space: normal;       /* 允许换行 */
+      word-break: break-word;    /* 长词断行 */
+      line-height: 1.3;
     }
     .question-option.selected {
       border-color: #9f7aea;
@@ -939,7 +933,7 @@
       nextPage('page-questions');
     }
 
-    // 渲染所有题目
+    // 渲染所有题目（已移除必答标签）
     function renderQuestions() {
       const container = document.getElementById('questions-container');
       let html = '';
@@ -956,7 +950,6 @@
         html += `
           <div class="question-item" data-qindex="${index}">
             <div class="question-header">
-              <span class="required-tag">必答</span>
               <span class="question-text">${qNum}. ${q.text}</span>
             </div>
             <div class="question-options">
@@ -1440,12 +1433,12 @@
       ctx.lineWidth = 2;
       ctx.stroke();
 
-      // 画标签（调整位置确保不被截断）
+      // 画标签
       ctx.fillStyle = '#666';
       ctx.font = '12px sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      const labelRadius = radius + 20; // 适当增加距离
+      const labelRadius = radius + 20;
       for (let i = 0; i < labels.length; i++) {
         const x = centerX + labelRadius * Math.cos(angles[i]);
         const y = centerY + labelRadius * Math.sin(angles[i]);
