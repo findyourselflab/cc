@@ -271,7 +271,7 @@
       background: #f9f2ff;
       border: 1px solid #e9d5ff;
       border-radius: 6px;
-      padding: 16px 24px; /* 增加左右内边距，为选项留出更多空间 */
+      padding: 16px 24px;
       margin-bottom: 16px;
     }
     .question-header {
@@ -281,27 +281,27 @@
       margin-bottom: 12px;
     }
     .question-text {
-      font-size: 14px;
+      font-size: 16px; /* 题目字号调大 */
       color: #333;
     }
     .question-options {
       display: flex;
-      gap: 6px; /* 稍微减小间距，让选项更紧凑 */
+      gap: 8px;
       margin-top: 12px;
       flex-wrap: nowrap;
+      justify-content: flex-start;
     }
     .question-option {
-      flex: 1 1 0%;
+      flex: 0 1 auto;      /* 宽度根据内容自适应，允许缩小 */
       min-width: 0;
       text-align: center;
-      padding: 6px 2px;
+      padding: 6px 10px;   /* 固定左右内边距，保证文字与边框有间距 */
       border: 1px solid #ddd;
       border-radius: 4px;
-      font-size: clamp(8px, 2.5vw, 14px); /* 最小字号降到8px，以在极端窄屏下完整显示 */
+      font-size: clamp(8px, 2.5vw, 14px); /* 字号自动缩小，确保一行显示 */
       color: #666;
       cursor: pointer;
-      white-space: nowrap;      /* 强制不换行 */
-      overflow: visible;
+      white-space: nowrap;
       line-height: 1.3;
     }
     .question-option.selected {
