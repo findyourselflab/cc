@@ -16,31 +16,20 @@
             background-color: #f5f8ff;
             min-height: 100vh;
             display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            padding: 20px;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            /* 移除body的padding，由内部容器控制 */
         }
 
-        .app-container {
-            width: 100%;
-            max-width: 900px;
-            background-color: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-
-        /* 倒计时条样式（使用ID选择器） */
+        /* 倒计时条样式 - 固定在顶部居中，占满全宽 */
         #timer-bar {
-            position: sticky;
-            top: 0;
+            width: 100%;
             background-color: #e0f2fe;
             color: #0369a1;
-            padding: 10px;
+            padding: 10px 0;
             font-size: 14px;
             border-bottom: 2px solid #23b8d8;
-            z-index: 1000;
-            width: 100%;
             text-align: center;
             display: flex;
             align-items: center;
@@ -48,9 +37,19 @@
             box-sizing: border-box;
         }
 
-        /* 隐藏状态 */
         #timer-bar.hidden {
             display: none;
+        }
+
+        /* 主内容容器 - 居中显示 */
+        .app-container {
+            width: 100%;
+            max-width: 900px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin: 20px; /* 四周留白，与倒计时条分隔 */
         }
 
         /* 首页样式 */
@@ -530,11 +529,12 @@
             .test-btn { width: 100%; }
             .features-grid { grid-template-columns: 1fr; }
             .other-cities-grid { grid-template-columns: 1fr; }
+            .app-container { margin: 10px; } /* 手机上减少边距 */
         }
     </style>
 </head>
 <body>
-    <!-- 预先放置倒计时条容器（默认隐藏） -->
+    <!-- 倒计时条放在主容器外部，确保占满全宽 -->
     <div id="timer-bar" class="hidden"></div>
 
     <div class="app-container">
@@ -645,7 +645,6 @@
             const expire = urlParams.get('expire');
 
             if (!expire) {
-                // 无 expire 参数，显示错误并清空页面
                 document.body.innerHTML = '<div style="text-align:center; margin-top:50px; font-family: sans-serif; color:#23b8d8; font-size:20px;">🔒 无效的访问链接</div>';
                 window.stop();
                 return;
@@ -666,14 +665,12 @@
                 return;
             }
 
-            // 链接有效，显示倒计时条并更新内容
             timerBar.classList.remove('hidden');
 
             function updateTimer() {
                 const now = Math.floor(Date.now() / 1000);
                 const remaining = expireTime - now;
                 if (remaining <= 0) {
-                    // 如果倒计时结束，显示过期信息并停止
                     document.body.innerHTML = '<div style="text-align:center; margin-top:50px; font-family: sans-serif; color:#23b8d8; font-size:20px;">⏳ 此链接已过期，请重新购买</div>';
                     window.stop();
                     return;
@@ -684,7 +681,7 @@
             }
 
             updateTimer();
-            setInterval(updateTimer, 1000); // 每秒更新倒计时
+            setInterval(updateTimer, 1000);
         })();
     </script>
 
@@ -832,11 +829,9 @@
             }
         ];
 
-        // 答案存储
         let answers = new Array(questions.length).fill(null);
         let currentQuestion = 0;
 
-        // DOM 元素
         const homePage = document.getElementById('homePage');
         const testPage = document.getElementById('testPage');
         const resultPage = document.getElementById('resultPage');
@@ -850,7 +845,6 @@
         const questionTitle = document.getElementById('questionTitle');
         const optionsList = document.getElementById('optionsList');
 
-        // 结果页元素
         const mainMatchPercent = document.getElementById('mainMatchPercent');
         const mainCityName = document.getElementById('mainCityName');
         const mainCityTags = document.getElementById('mainCityTags');
@@ -926,8 +920,7 @@
 
             mainMatchPercent.textContent = `${Math.round(main.similarity)}%`;
             mainCityName.textContent = `📍 你的天选之城：${main.city.name}`;
-            const tags = main.city.tags;
-            mainCityTags.innerHTML = tags.map(t => `<span class="tag light-blue">${t}</span>`).join('');
+            mainCityTags.innerHTML = main.city.tags.map(t => `<span class="tag light-blue">${t}</span>`).join('');
             matchReasonText.textContent = main.city.reason;
 
             otherCitiesContainer.innerHTML = others.map(item => {
