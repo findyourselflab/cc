@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>你的性格与哪个城市是天选CP</title>
     <style>
         * {
@@ -17,7 +17,7 @@
             min-height: 100vh;
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start; /* 改为顶部对齐，避免内容被截断 */
             padding: 20px;
         }
 
@@ -28,6 +28,20 @@
             border-radius: 12px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             overflow: hidden;
+        }
+
+        /* 倒计时条样式：居中显示 */
+        .timer-bar {
+            position: sticky;
+            top: 0;
+            background-color: #e0f2fe;
+            color: #0369a1;
+            padding: 10px;
+            text-align: center;
+            font-size: 14px;
+            border-bottom: 2px solid #23b8d8;
+            z-index: 1000;
+            width: 100%;
         }
 
         /* 首页样式 */
@@ -247,6 +261,7 @@
             font-size: 16px;
             color: #4a5568;
             vertical-align: middle;
+            word-break: break-word; /* 防止长文本溢出 */
         }
 
         .test-footer {
@@ -496,10 +511,21 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
+        /* 手机适配优化 */
+        @media (max-width: 600px) {
+            .home-title { font-size: 24px; }
+            .question-title { font-size: 20px; }
+            .option-text { font-size: 15px; }
+            .test-footer { flex-direction: column; }
+            .test-btn { width: 100%; }
+            .features-grid { grid-template-columns: 1fr; }
+            .other-cities-grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
-<!-- 过期验证脚本（放在最顶部） -->
+<!-- 过期验证脚本（放在最顶部，但会动态插入计时条） -->
 <script>
 (function() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -526,21 +552,13 @@
         return;
     }
 
-    // 链接有效，添加倒计时条
+    // 链接有效，添加倒计时条（使用 class 以便样式控制）
     const remaining = expireTime - now;
     const remainingMinutes = Math.floor(remaining / 60);
     const remainingSeconds = remaining % 60;
 
     const timerDiv = document.createElement('div');
-    timerDiv.style.position = 'sticky';
-    timerDiv.style.top = '0';
-    timerDiv.style.backgroundColor = '#e0f2fe';
-    timerDiv.style.color = '#0369a1';
-    timerDiv.style.padding = '10px';
-    timerDiv.style.textAlign = 'center';
-    timerDiv.style.fontSize = '14px';
-    timerDiv.style.borderBottom = '2px solid #23b8d8';
-    timerDiv.style.zIndex = '1000';
+    timerDiv.className = 'timer-bar'; // 使用 CSS 类
     timerDiv.innerHTML = `⏰ 本链接剩余有效时间：${remainingMinutes}分${remainingSeconds}秒（过期后链接将自动失效）`;
 
     document.body.prepend(timerDiv);
