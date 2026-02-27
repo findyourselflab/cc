@@ -79,61 +79,7 @@
         .screen.active {
             display: block;
         }
-        .nav-bar {
-            position: sticky;
-            top: 0;
-            z-index: 40;
-            background: rgba(255,255,255,0.85);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(226,232,240,0.8);
-        }
-        .nav-bar.hidden {
-            display: none;
-        }
-        .nav-content {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 12px 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        .nav-logo {
-            font-weight: 700;
-            color: #334155;
-            font-size: 16px;
-        }
-        .nav-actions {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        .nav-actions__btn {
-            padding: 8px 16px;
-            border-radius: 999px;
-            font-weight: 600;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        .nav-actions__btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 8px 20px rgba(139,92,246,0.12);
-        }
-        .nav-actions__btn--primary {
-            background: linear-gradient(120deg,#8b5cf6,#a78bfa);
-            color: #fff;
-        }
-        .nav-actions__btn--ghost {
-            border: 1px solid rgba(139,92,246,0.35);
-            background: rgba(139,92,246,0.08);
-            color: #8b5cf6;
-        }
+        /* 导航栏已完全移除 */
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 antialiased min-h-screen flex flex-col selection:bg-purple-100 selection:text-purple-900">
@@ -146,15 +92,6 @@
         <div class="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-purple-100 mix-blend-multiply filter blur-3xl opacity-70 animate-blob"></div>
         <div class="absolute top-[20%] -right-[10%] w-[50%] h-[50%] rounded-full bg-pink-100 mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000"></div>
         <div class="absolute -bottom-[20%] left-[20%] w-[50%] h-[50%] rounded-full bg-rose-100 mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-4000"></div>
-    </div>
-
-    <div class="nav-bar" id="psycheNav">
-        <div class="nav-content">
-            <div class="nav-logo">PsycheAge 心理年龄测试</div>
-            <div class="nav-actions">
-                <a href="#" class="nav-actions__btn nav-actions__btn--primary">返回测试合集首页</a>
-            </div>
-        </div>
     </div>
 
     <!-- Main Content -->
@@ -438,7 +375,7 @@
                         </div>
                     </div>
 
-                    <!-- Footer Actions -->
+                    <!-- Footer Actions (只保留重新测试按钮) -->
                     <div class="bg-slate-50 p-6 md:p-8 flex flex-col sm:flex-row justify-between items-center gap-4 border-t border-slate-100">
                         <div class="text-slate-500 text-sm">
                             总分: <span id="res-total-score" class="font-bold text-slate-800">0</span> / 160
@@ -448,14 +385,7 @@
                                 <i data-lucide="rotate-ccw" class="w-4 h-4 mr-2"></i>
                                 重新测试
                             </button>
-                            <a href="#" target="_blank" rel="noopener" class="flex items-center px-6 py-2.5 rounded-full border-2 border-purple-200 bg-white text-purple-700 hover:border-purple-500 hover:bg-purple-50 transition-colors font-medium">
-                                <i data-lucide="users" class="w-4 h-4 mr-2"></i>
-                                加入测试交流群
-                            </a>
-                            <button onclick="app.share()" class="flex items-center px-6 py-2.5 rounded-full bg-purple-600 text-white hover:bg-purple-700 shadow-lg hover:shadow-purple-500/30 transition-all font-medium">
-                                <i data-lucide="share-2" class="w-4 h-4 mr-2"></i>
-                                分享结果
-                            </button>
+                            <!-- 已移除“加入测试交流群”和“分享结果”按钮 -->
                         </div>
                     </div>
                 </div>
@@ -634,14 +564,6 @@
             showScreen: function(screenId) {
                 document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
                 document.getElementById(screenId).classList.add('active');
-                const nav = document.getElementById('psycheNav');
-                if (nav) {
-                    if (screenId === 'start-screen') {
-                        nav.classList.remove('hidden');
-                    } else {
-                        nav.classList.add('hidden');
-                    }
-                }
                 if (screenId === 'result-screen') {
                     // 解锁报告功能简化（始终显示完整报告）
                     document.getElementById('full-report').style.display = 'block';
@@ -891,15 +813,7 @@
             },
 
             share: function() {
-                if (navigator.share) {
-                    navigator.share({
-                        title: '我的心理年龄测试结果',
-                        text: `我的实际年龄${this.state.actualAge}岁，但心理年龄是${document.getElementById('res-psych-age').textContent}岁！。你也来试试吧！`,
-                        url: window.location.href,
-                    }).catch(console.error);
-                } else {
-                    alert('截屏即可分享结果给朋友哦！');
-                }
+                // 分享功能已移除，保留空函数避免报错
             }
         };
 
