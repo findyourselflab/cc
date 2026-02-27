@@ -265,7 +265,7 @@
 
     <script>
         (function() {
-            // 过期验证
+            // ---------- 过期验证 ----------
             const timerBar = document.getElementById('timer-bar');
             const urlParams = new URLSearchParams(window.location.search);
             const expire = urlParams.get('expire');
@@ -647,6 +647,26 @@
         const questionText = document.getElementById('question-text');
         const optionsContainer = document.getElementById('options-container');
 
+        // 结果页元素
+        const psychAgeEl = document.getElementById('psych-age');
+        const actualAgeEl = document.getElementById('actual-age');
+        const ageDiffEl = document.getElementById('age-diff');
+        const resultTypeEl = document.getElementById('result-type');
+        const resultAgeRangeEl = document.getElementById('result-age-range');
+        const bannerTitleEl = document.getElementById('banner-title');
+        const resultDescEl = document.getElementById('result-desc');
+        const adviceTextEl = document.getElementById('advice-text');
+        const totalScoreEl = document.getElementById('total-score');
+        const traitsContainer = document.getElementById('traits-container');
+        const strengthsList = document.getElementById('strengths-list');
+        const blindspotsList = document.getElementById('blindspots-list');
+        const dimGrid = document.getElementById('dimension-grid');
+        const archetypeEl = document.getElementById('archetype');
+        const partnerEl = document.getElementById('partner');
+        const partnerReasonEl = document.getElementById('partner-reason');
+        const conflictEl = document.getElementById('conflict');
+        const conflictReasonEl = document.getElementById('conflict-reason');
+
         // 初始化日期选择
         function initDateInputs() {
             const yearSel = document.getElementById('input-year');
@@ -687,6 +707,10 @@
         function showPage(pageId) {
             Object.values(pages).forEach(p => p.classList.remove('active'));
             pages[pageId].classList.add('active');
+            if (pageId === 'result') {
+                // 确保canvas容器可见后尝试绘制
+                setTimeout(() => drawRadar(), 100);
+            }
         }
 
         function saveAnswers() {
@@ -766,7 +790,6 @@
 
             // 查找匹配的结果类型
             const result = RESULTS.find(r => score >= r.minScore && score <= r.maxScore) || RESULTS[RESULTS.length-1];
-            console.log('匹配结果:', result.title, '分数:', score); // 调试用
 
             // 计算心理年龄
             let psychAge;
@@ -776,27 +799,23 @@
             else if (score <= 138) psychAge = Math.round(36 + ((score-116)/(138-116))*(55-36));
             else psychAge = Math.round(60 + ((score-139)/(160-139))*(80-60));
 
-            // 渲染结果页
-            showPage('result');
-            document.getElementById('psych-age').textContent = psychAge;
-            document.getElementById('actual-age').textContent = actualAge;
+            // 填充结果页
+            psychAgeEl.textContent = psychAge;
+            actualAgeEl.textContent = actualAge;
             const diff = psychAge - actualAge;
-            const diffEl = document.getElementById('age-diff');
-            if (Math.abs(diff) <= 2) diffEl.textContent = "你的身心年龄完美契合，知行合一。";
-            else if (diff > 0) diffEl.textContent = `你的内心比实际年龄成熟 ${diff} 岁，拥有超龄的稳重。`;
-            else diffEl.textContent = `你的内心比实际年龄年轻 ${-diff} 岁，保留着珍贵的活力。`;
+            if (Math.abs(diff) <= 2) ageDiffEl.textContent = "你的身心年龄完美契合，知行合一。";
+            else if (diff > 0) ageDiffEl.textContent = `你的内心比实际年龄成熟 ${diff} 岁，拥有超龄的稳重。`;
+            else ageDiffEl.textContent = `你的内心比实际年龄年轻 ${-diff} 岁，保留着珍贵的活力。`;
 
-            // 动态设置所有 result 相关字段
-            document.getElementById('result-type').textContent = result.title;
-            document.getElementById('result-age-range').textContent = result.ageRange;
-            document.getElementById('banner-title').textContent = result.title;
-            document.getElementById('result-desc').textContent = result.description;
+            resultTypeEl.textContent = result.title;
+            resultAgeRangeEl.textContent = result.ageRange;
+            bannerTitleEl.textContent = result.title;
+            resultDescEl.textContent = result.description;
             document.getElementById('result-banner').style.background = result.color;
-            document.getElementById('advice-text').textContent = result.advice;
-            document.getElementById('total-score').textContent = score;
+            adviceTextEl.textContent = result.advice;
+            totalScoreEl.textContent = score;
 
             // 关键词标签
-            const traitsContainer = document.getElementById('traits-container');
             traitsContainer.innerHTML = '';
             result.traits.forEach(t => {
                 const span = document.createElement('span');
@@ -806,7 +825,6 @@
             });
 
             // 优势/盲点
-            const strengthsList = document.getElementById('strengths-list');
             strengthsList.innerHTML = '';
             result.strengths.forEach(s => {
                 const li = document.createElement('li');
@@ -814,7 +832,6 @@
                 li.textContent = s;
                 strengthsList.appendChild(li);
             });
-            const blindspotsList = document.getElementById('blindspots-list');
             blindspotsList.innerHTML = '';
             result.blindspots.forEach(b => {
                 const li = document.createElement('li');
@@ -824,7 +841,6 @@
             });
 
             // 维度网格
-            const dimGrid = document.getElementById('dimension-grid');
             dimGrid.innerHTML = '';
             const dimData = result.dimension;
             const dimLabels = result.dimensionLabels;
@@ -841,47 +857,52 @@
             }
 
             // 社交匹配
-            document.getElementById('archetype').textContent = result.matches.archetype;
-            document.getElementById('partner').textContent = result.matches.bestPartner;
-            document.getElementById('partner-reason').textContent = result.matches.partnerReason;
-            document.getElementById('conflict').textContent = result.matches.conflict;
-            document.getElementById('conflict-reason').textContent = result.matches.conflictReason;
+            archetypeEl.textContent = result.matches.archetype;
+            partnerEl.textContent = result.matches.bestPartner;
+            partnerReasonEl.textContent = result.matches.partnerReason;
+            conflictEl.textContent = result.matches.conflict;
+            conflictReasonEl.textContent = result.matches.conflictReason;
 
-            // 延迟一点绘制雷达图，确保canvas已完全渲染
-            setTimeout(() => {
-                try {
-                    if (chartInstance) chartInstance.destroy();
-                    const ctx = document.getElementById('radar-chart').getContext('2d');
-                    if (ctx) {
-                        chartInstance = new Chart(ctx, {
-                            type: 'radar',
-                            data: {
-                                labels: dimLabels,
-                                datasets: [{
-                                    label: result.title,
-                                    data: dimData,
-                                    backgroundColor: 'rgba(249, 115, 22, 0.2)',
-                                    borderColor: '#f97316',
-                                    pointBackgroundColor: '#f97316',
-                                    pointBorderColor: '#fff',
-                                    pointHoverBackgroundColor: '#fff',
-                                    pointHoverBorderColor: '#f97316'
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                scales: { r: { beginAtZero: true, max: 100, ticks: { stepSize: 20 } } },
-                                plugins: { legend: { display: false } }
-                            }
-                        });
-                    } else {
-                        console.error('Canvas context not found');
-                    }
-                } catch (e) {
-                    console.error('雷达图绘制失败:', e);
+            // 显示结果页
+            showPage('result');
+        }
+
+        // 绘制雷达图（独立函数，方便延迟调用）
+        function drawRadar() {
+            const result = RESULTS.find(r => totalScore >= r.minScore && totalScore <= r.maxScore) || RESULTS[RESULTS.length-1];
+            if (!result) return;
+            const dimData = result.dimension;
+            const dimLabels = result.dimensionLabels;
+            const canvas = document.getElementById('radar-chart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return;
+
+            // 销毁之前的实例
+            if (chartInstance) chartInstance.destroy();
+
+            chartInstance = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: dimLabels,
+                    datasets: [{
+                        label: result.title,
+                        data: dimData,
+                        backgroundColor: 'rgba(249, 115, 22, 0.2)',
+                        borderColor: '#f97316',
+                        pointBackgroundColor: '#f97316',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#f97316'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { r: { beginAtZero: true, max: 100, ticks: { stepSize: 20 } } },
+                    plugins: { legend: { display: false } }
                 }
-            }, 100);
+            });
         }
 
         btnRestart.addEventListener('click', () => {
@@ -895,7 +916,7 @@
             if (navigator.share) {
                 navigator.share({
                     title: '我的心理年龄测试结果',
-                    text: `我的实际年龄${actualAge}岁，但心理年龄是${document.getElementById('psych-age').textContent}岁！你也来试试吧！`,
+                    text: `我的实际年龄${actualAge}岁，但心理年龄是${psychAgeEl.textContent}岁！你也来试试吧！`,
                     url: window.location.href,
                 }).catch(console.error);
             } else {
