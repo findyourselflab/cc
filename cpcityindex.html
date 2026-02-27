@@ -30,7 +30,7 @@
             overflow: hidden;
         }
 
-        /* 倒计时条样式（确保居中） */
+        /* 倒计时条样式（使用ID选择器） */
         #timer-bar {
             position: sticky;
             top: 0;
@@ -48,7 +48,7 @@
             box-sizing: border-box;
         }
 
-        /* 默认隐藏，当链接有效时显示 */
+        /* 隐藏状态 */
         #timer-bar.hidden {
             display: none;
         }
@@ -535,7 +535,7 @@
 </head>
 <body>
     <!-- 预先放置倒计时条容器（默认隐藏） -->
-    <div id="timer-bar" class="timer-bar hidden"></div>
+    <div id="timer-bar" class="hidden"></div>
 
     <div class="app-container">
         <!-- 首页 -->
@@ -673,7 +673,7 @@
                 const now = Math.floor(Date.now() / 1000);
                 const remaining = expireTime - now;
                 if (remaining <= 0) {
-                    // 如果倒计时结束，显示过期信息并刷新页面或停止
+                    // 如果倒计时结束，显示过期信息并停止
                     document.body.innerHTML = '<div style="text-align:center; margin-top:50px; font-family: sans-serif; color:#23b8d8; font-size:20px;">⏳ 此链接已过期，请重新购买</div>';
                     window.stop();
                     return;
