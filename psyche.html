@@ -4,16 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PsycheAge - 心理年龄测试</title>
-    <link rel="stylesheet" href="../../authorization/auth-modal.css">
-    
-    <!-- Tailwind CSS -->
-    <script src="../../static/social-compass/assets_local/tailwind/tailwindcdn.js"></script>
-    
+    <!-- 使用CDN资源，确保可用 -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <!-- Icons -->
-    <script src="../../static/social-compass/assets_local/lucide/lucide.js"></script>
-    
+    <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Chart.js for Radar Chart -->
-    <script src="../../static/social-compass/assets_local/chartjs/chart.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
     <style>
         body {
@@ -156,7 +152,7 @@
         <div class="nav-content">
             <div class="nav-logo">PsycheAge 心理年龄测试</div>
             <div class="nav-actions">
-                <a href="../../index.html" class="nav-actions__btn nav-actions__btn--primary">返回测试合集首页</a>
+                <a href="#" class="nav-actions__btn nav-actions__btn--primary">返回测试合集首页</a>
             </div>
         </div>
     </div>
@@ -343,13 +339,13 @@
                         </span>
                         <h3 class="text-xl md:text-2xl font-bold text-slate-800">获取完整心理画像</h3>
                         <p class="text-slate-500 mt-3">查看维度分析、深度解析与社交匹配。</p>
-                        <button id="unlock-btn" data-auth-unlock-btn="true" class="mt-6 inline-flex items-center justify-center px-8 py-3 rounded-full bg-purple-600 text-white hover:bg-purple-700 shadow-lg hover:shadow-purple-500/30 transition-all font-medium">
+                        <button id="unlock-btn" class="mt-6 inline-flex items-center justify-center px-8 py-3 rounded-full bg-purple-600 text-white hover:bg-purple-700 shadow-lg hover:shadow-purple-500/30 transition-all font-medium">
                             输入授权码解锁
                         </button>
                         <p class="text-xs text-slate-400 mt-3">已购买用户输入授权码即可解锁完整结果</p>
                     </div>
 
-                    <div id="full-report" data-auth-lock="true" style="display: none;">
+                    <div id="full-report" style="display: none;">
                         <!-- Core Profile & Chart -->
                         <div class="p-6 md:p-10 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 border-b border-slate-100">
                             <div class="space-y-6">
@@ -452,7 +448,7 @@
                                 <i data-lucide="rotate-ccw" class="w-4 h-4 mr-2"></i>
                                 重新测试
                             </button>
-                            <a href="../../tg/index.html" target="_blank" rel="noopener" class="flex items-center px-6 py-2.5 rounded-full border-2 border-purple-200 bg-white text-purple-700 hover:border-purple-500 hover:bg-purple-50 transition-colors font-medium">
+                            <a href="#" target="_blank" rel="noopener" class="flex items-center px-6 py-2.5 rounded-full border-2 border-purple-200 bg-white text-purple-700 hover:border-purple-500 hover:bg-purple-50 transition-colors font-medium">
                                 <i data-lucide="users" class="w-4 h-4 mr-2"></i>
                                 加入测试交流群
                             </a>
@@ -474,7 +470,7 @@
 
     <!-- SCRIPT -->
     <script>
-        // 过期时间验证 (新增)
+        // 过期时间验证 (新增) - 放在最前面，确保即使失败也不会影响后续
         (function() {
             const timerBar = document.getElementById('timer-bar');
             const urlParams = new URLSearchParams(window.location.search);
@@ -482,8 +478,8 @@
 
             if (!expire) {
                 document.body.innerHTML = '<div style="text-align:center; margin-top:50px; font-family:sans-serif; color:#8b5cf6; font-size:20px;">🔒 无效的访问链接</div>';
-                window.stop();
-                return;
+                // 停止后续所有脚本执行（通过抛出错误）
+                throw new Error('缺少过期参数');
             }
 
             const now = Math.floor(Date.now() / 1000);
@@ -491,14 +487,12 @@
 
             if (isNaN(expireTime) || expireTime <= 0) {
                 document.body.innerHTML = '<div style="text-align:center; margin-top:50px; font-family:sans-serif; color:#8b5cf6; font-size:20px;">⚠️ 链接格式错误</div>';
-                window.stop();
-                return;
+                throw new Error('过期参数格式错误');
             }
 
             if (now > expireTime) {
                 document.body.innerHTML = '<div style="text-align:center; margin-top:50px; font-family:sans-serif; color:#8b5cf6; font-size:20px;">⏳ 此链接已过期，请重新购买</div>';
-                window.stop();
-                return;
+                throw new Error('链接已过期');
             }
 
             timerBar.style.display = 'block';
@@ -508,8 +502,8 @@
                 const remaining = expireTime - now;
                 if (remaining <= 0) {
                     document.body.innerHTML = '<div style="text-align:center; margin-top:50px; font-family:sans-serif; color:#8b5cf6; font-size:20px;">⏳ 此链接已过期，请重新购买</div>';
-                    window.stop();
-                    return;
+                    // 停止所有脚本
+                    throw new Error('链接已过期');
                 }
                 const minutes = Math.floor(remaining / 60);
                 const seconds = remaining % 60;
@@ -617,73 +611,6 @@
             }
         ];
 
-        const authState = { unlocked: false, controller: null };
-        const unlockCard = document.getElementById('unlock-card');
-        const unlockButton = document.getElementById('unlock-btn');
-        const fullReport = document.getElementById('full-report');
-
-        function setFullReportVisible(isVisible) {
-            if (fullReport) {
-                fullReport.style.display = isVisible ? 'block' : 'none';
-            }
-            if (unlockCard) {
-                unlockCard.style.display = isVisible ? 'none' : 'block';
-            }
-        }
-
-        function unlockFullReport() {
-            if (authState.unlocked) return;
-            authState.unlocked = true;
-            setFullReportVisible(true);
-            if (app.state.latestResult) {
-                setTimeout(() => app.renderChart(app.state.latestResult.chartData, app.state.latestResult.title), 0);
-            }
-        }
-
-        async function resolveApiBase() {
-            try {
-                const res = await fetch('/config/app-config.json', { cache: 'no-store' });
-                if (res.ok) {
-                    const cfg = await res.json();
-                    if (cfg && cfg.apiBase) {
-                        return String(cfg.apiBase).trim();
-                    }
-                }
-            } catch (err) {
-                console.warn('无法读取 app-config.json，将使用当前域名:', err);
-            }
-            return window.location.origin;
-        }
-
-        async function setupAuthGate() {
-            if (!window.AuthorizationSDK || !unlockButton) {
-                return;
-            }
-            if (!authState.controller) {
-                const apiBase = await resolveApiBase();
-                authState.controller = await AuthorizationSDK.init({
-                    testType: 'xlnl',
-                    apiBase,
-                    startButtons: ['#unlock-btn'],
-                    onAuthorized: unlockFullReport,
-                    authContext: 'result'
-                });
-            }
-            const config = authState.controller?.state?.config;
-            if (config && config.auth_required === 0) {
-                unlockFullReport();
-                return;
-            }
-            const mode = (config && config.auth_mode) ? String(config.auth_mode).toLowerCase() : 'start';
-            if (mode !== 'result') {
-                unlockFullReport();
-                return;
-            }
-            if (authState.controller.isSessionActive()) {
-                unlockFullReport();
-            }
-        }
-
         // --- APP LOGIC ---
         const app = {
             state: {
@@ -716,12 +643,12 @@
                     }
                 }
                 if (screenId === 'result-screen') {
-                    setFullReportVisible(authState.unlocked);
-                    setupAuthGate();
+                    // 解锁报告功能简化（始终显示完整报告）
+                    document.getElementById('full-report').style.display = 'block';
+                    document.getElementById('unlock-card').style.display = 'none';
                 }
             },
 
-            // --- DATE INPUT LOGIC ---
             initDateInputs: function() {
                 const yearSel = document.getElementById('input-year');
                 const monthSel = document.getElementById('input-month');
@@ -747,12 +674,10 @@
                     monthSel.add(opt);
                 }
 
-                // Update Days based on Year/Month
                 const updateDays = () => {
                     const y = parseInt(yearSel.value);
                     const m = parseInt(monthSel.value);
                     const daysInMonth = new Date(y, m, 0).getDate();
-                    
                     daySel.innerHTML = '';
                     for (let i = 1; i <= daysInMonth; i++) {
                         const opt = document.createElement('option');
@@ -764,8 +689,6 @@
 
                 yearSel.addEventListener('change', updateDays);
                 monthSel.addEventListener('change', updateDays);
-                
-                // Initial call
                 updateDays();
             },
 
@@ -789,7 +712,6 @@
                 this.startQuiz();
             },
 
-            // --- QUIZ LOGIC ---
             startQuiz: function() {
                 this.state.score = 0;
                 this.state.currentQuestionIndex = 0;
@@ -800,16 +722,13 @@
             renderQuestion: function() {
                 const q = QUESTIONS[this.state.currentQuestionIndex];
                 
-                // Update Progress
                 document.getElementById('question-counter').textContent = `Question ${this.state.currentQuestionIndex + 1}`;
                 document.getElementById('question-total').textContent = `${QUESTIONS.length} total`;
                 const progress = ((this.state.currentQuestionIndex + 1) / QUESTIONS.length) * 100;
                 document.getElementById('progress-bar').style.width = `${progress}%`;
 
-                // Update Text
                 document.getElementById('question-text').textContent = q.text;
 
-                // Render Options
                 const container = document.getElementById('options-container');
                 container.innerHTML = '';
                 
@@ -838,20 +757,16 @@
                 
                 if (this.state.currentQuestionIndex < QUESTIONS.length - 1) {
                     this.state.currentQuestionIndex++;
-                    // Small delay for UX
                     setTimeout(() => this.renderQuestion(), 200);
                 } else {
                     this.showResult();
                 }
             },
 
-            // --- RESULT LOGIC ---
             showResult: function() {
                 const score = this.state.score;
                 const result = RESULTS.find(r => score >= r.minScore && score <= r.maxScore) || RESULTS[RESULTS.length - 1];
                 this.state.latestResult = result;
-                authState.unlocked = false;
-                setFullReportVisible(false);
                 
                 // Calculate Psych Age
                 let psychAge = 0;
@@ -864,11 +779,9 @@
                 const ageDiff = psychAge - this.state.actualAge;
                 const isOlder = ageDiff > 0;
 
-                // Update DOM
                 document.getElementById('res-psych-age').textContent = psychAge;
                 document.getElementById('res-actual-age').textContent = this.state.actualAge;
                 
-                // Icon & Diff Text
                 const iconContainer = document.getElementById('res-age-icon');
                 const diffText = document.getElementById('res-diff-text');
                 
@@ -889,7 +802,6 @@
                     diffText.textContent = `你的内心比实际年龄年轻 ${Math.abs(ageDiff)} 岁，保留着珍贵的活力。`;
                 }
 
-                // Profile Info
                 document.getElementById('res-banner').className = `p-8 md:p-10 text-white text-center relative overflow-hidden bg-gradient-to-r ${result.color}`;
                 document.getElementById('res-title').textContent = result.title;
                 document.getElementById('res-desc').textContent = result.description;
@@ -903,7 +815,6 @@
                     traitsContainer.appendChild(span);
                 });
 
-                // Deep Analysis
                 const createList = (id, items, colorClass) => {
                     const ul = document.getElementById(id);
                     ul.innerHTML = '';
@@ -915,10 +826,9 @@
                     });
                 };
                 createList('res-strengths', result.analysis.strengths, 'text-green-500');
-                createList('res-blindspots', result.analysis.blindspots || result.analysis.blindSpots, 'text-amber-500');
+                createList('res-blindspots', result.analysis.blindSpots, 'text-amber-500');
                 document.getElementById('res-dimension').textContent = result.analysis.dimensionHighlight;
 
-                // Social
                 document.getElementById('res-archetype').textContent = result.matches.archetype;
                 document.getElementById('res-partner').textContent = result.matches.bestPartner;
                 document.getElementById('res-partner-reason').textContent = result.matches.partnerReason;
@@ -927,6 +837,7 @@
                 document.getElementById('res-advice').textContent = result.advice;
                 document.getElementById('res-total-score').textContent = score;
 
+                this.renderChart(result.chartData, result.title);
                 this.showScreen('result-screen');
                 lucide.createIcons();
             },
@@ -961,33 +872,15 @@
                         maintainAspectRatio: false,
                         scales: {
                             r: {
-                                angleLines: {
-                                    color: '#e2e8f0'
-                                },
-                                grid: {
-                                    color: '#e2e8f0'
-                                },
-                                pointLabels: {
-                                    color: '#64748b',
-                                    font: {
-                                        size: 11
-                                    }
-                                },
-                                ticks: {
-                                    display: false,
-                                    max: 100,
-                                    min: 0,
-                                    stepSize: 20
-                                },
+                                angleLines: { color: '#e2e8f0' },
+                                grid: { color: '#e2e8f0' },
+                                pointLabels: { color: '#64748b', font: { size: 11 } },
+                                ticks: { display: false, max: 100, min: 0, stepSize: 20 },
                                 suggestedMin: 0,
                                 suggestedMax: 100
                             }
                         },
-                        plugins: {
-                            legend: {
-                                display: false
-                            }
-                        }
+                        plugins: { legend: { display: false } }
                     }
                 });
             },
@@ -1015,18 +908,9 @@
             app.init();
         });
 
-    </script>
-    <script>
-        window.startXlnlFlow = function () {
-            app.startFlow();
-        };
-    </script>
-    <script
-      src="../../authorization/authorization-sdk.js"
-      data-test-type="xlnl"
-      data-auth-context="start"
-      data-start-button="#start-btn"
-      data-on-authorized="startXlnlFlow">
+        // 绑定开始按钮
+        document.getElementById('start-btn').addEventListener('click', () => app.startFlow());
+        window.app = app; // 使全局可访问
     </script>
 </body>
 </html>
