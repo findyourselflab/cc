@@ -31,7 +31,7 @@
         }
 
         /* 倒计时条样式（确保居中） */
-        .timer-bar {
+        #timer-bar {
             position: sticky;
             top: 0;
             background-color: #e0f2fe;
@@ -41,11 +41,16 @@
             border-bottom: 2px solid #23b8d8;
             z-index: 1000;
             width: 100%;
-            text-align: center !important; /* 强制居中 */
+            text-align: center;
             display: flex;
             align-items: center;
             justify-content: center;
             box-sizing: border-box;
+        }
+
+        /* 默认隐藏，当链接有效时显示 */
+        #timer-bar.hidden {
+            display: none;
         }
 
         /* 首页样式 */
@@ -529,441 +534,456 @@
     </style>
 </head>
 <body>
-<script>
-(function() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const expire = urlParams.get('expire');
+    <!-- 预先放置倒计时条容器（默认隐藏） -->
+    <div id="timer-bar" class="timer-bar hidden"></div>
 
-    if (!expire) {
-        document.body.innerHTML = '<div style="text-align:center; margin-top:50px; font-family: sans-serif; color:#23b8d8; font-size:20px;">🔒 无效的访问链接</div>';
-        window.stop();
-        return;
-    }
-
-    const now = Math.floor(Date.now() / 1000);
-    const expireTime = parseInt(expire, 10);
-
-    if (isNaN(expireTime) || expireTime <= 0) {
-        document.body.innerHTML = '<div style="text-align:center; margin-top:50px; font-family: sans-serif; color:#23b8d8; font-size:20px;">⚠️ 链接格式错误</div>';
-        window.stop();
-        return;
-    }
-
-    if (now > expireTime) {
-        document.body.innerHTML = '<div style="text-align:center; margin-top:50px; font-family: sans-serif; color:#23b8d8; font-size:20px;">⏳ 此链接已过期，请重新购买</div>';
-        window.stop();
-        return;
-    }
-
-    const remaining = expireTime - now;
-    const remainingMinutes = Math.floor(remaining / 60);
-    const remainingSeconds = remaining % 60;
-
-    const timerDiv = document.createElement('div');
-    timerDiv.className = 'timer-bar'; // 使用类，确保样式一致
-    timerDiv.innerHTML = `⏰ 本链接剩余有效时间：${remainingMinutes}分${remainingSeconds}秒（过期后链接将自动失效）`;
-
-    document.body.prepend(timerDiv);
-})();
-</script>
-
-<div class="app-container">
-    <!-- 首页 -->
-    <div class="page home-page active" id="homePage">
-        <h1 class="home-title">你的性格与哪个城市是天选CP</h1>
-        <div class="divider"></div>
-        <div class="icon-box">
-            <svg viewBox="0 0 24 24">
-                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-            </svg>
-        </div>
-        <div class="home-desc">
-            <p>在快节奏的生活里，总有一座城市与你的灵魂同频。在这里，诗意不必远寻——可能是杭州的烟雨画桥，也可能是成都的巴适午后。</p>
-            <br>
-            <p>完成这份测试，发现让你真正放松、找到归属感的心灵城市。</p>
-            <br>
-            <p>遇见中国最适合你的那座城，从此旅途有方向，心安是归处。</p>
-        </div>
-        <div class="features-grid">
-            <div class="feature-card">
-                <div class="feature-icon blue">
-                    <span>❓</span>
-                </div>
-                <h3 class="feature-title">30道精选题目</h3>
-                <p class="feature-subtitle">覆盖生活各方面</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon green">
-                    <span>⏱</span>
-                </div>
-                <h3 class="feature-title green">约5分钟完成</h3>
-                <p class="feature-subtitle">轻松快速测试</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon blue">
-                    <span>➤</span>
-                </div>
-                <h3 class="feature-title">16座城市匹配</h3>
-                <p class="feature-subtitle">发现你的天选之城</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon green">
-                    <span>🤖</span>
-                </div>
-                <h3 class="feature-title green">智能匹配算法</h3>
-                <p class="feature-subtitle">基于六维性格模型</p>
-            </div>
-        </div>
-        <button class="start-btn" id="startTestBtn">开始测试</button>
-    </div>
-
-    <!-- 测试页 -->
-    <div class="page test-page" id="testPage">
-        <div class="test-header">
-            <div class="test-progress-text" id="testProgressText">问题 1 / 30</div>
-            <div class="test-progress-percent" id="testProgressPercent">3%</div>
-        </div>
-        <div class="progress-bar">
-            <div class="progress-fill" id="progressFill" style="width: 3%"></div>
-        </div>
-        <h2 class="question-title" id="questionTitle"></h2>
-        <div class="options-list" id="optionsList"></div>
-        <div class="test-footer">
-            <button class="test-btn prev" id="prevBtn">上一题</button>
-            <button class="test-btn next" id="nextBtn">下一题</button>
-        </div>
-    </div>
-
-    <!-- 结果页 -->
-    <div class="page result-page" id="resultPage">
-        <h2 class="result-title">你的天选之城</h2>
-        <p class="result-subtitle">发现与你灵魂最契合的城市</p>
-        <div class="result-card">
-            <div class="result-icon-box">
+    <div class="app-container">
+        <!-- 首页 -->
+        <div class="page home-page active" id="homePage">
+            <h1 class="home-title">你的性格与哪个城市是天选CP</h1>
+            <div class="divider"></div>
+            <div class="icon-box">
                 <svg viewBox="0 0 24 24">
                     <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
                 </svg>
             </div>
-            <div class="match-icon">
-                <span>✈️</span>
-                <span>匹配度</span>
+            <div class="home-desc">
+                <p>在快节奏的生活里，总有一座城市与你的灵魂同频。在这里，诗意不必远寻——可能是杭州的烟雨画桥，也可能是成都的巴适午后。</p>
+                <br>
+                <p>完成这份测试，发现让你真正放松、找到归属感的心灵城市。</p>
+                <br>
+                <p>遇见中国最适合你的那座城，从此旅途有方向，心安是归处。</p>
             </div>
-            <div class="match-percent" id="mainMatchPercent">0%</div>
-            <h3 class="result-city" id="mainCityName">📍 加载中...</h3>
-            <div class="tags" id="mainCityTags"></div>
-            <div class="match-reason" id="matchReason">
-                <div class="match-reason-title">
-                    <span>✈️</span>
-                    <span>匹配理由</span>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon blue">
+                        <span>❓</span>
+                    </div>
+                    <h3 class="feature-title">30道精选题目</h3>
+                    <p class="feature-subtitle">覆盖生活各方面</p>
                 </div>
-                <p class="match-reason-text" id="matchReasonText"></p>
+                <div class="feature-card">
+                    <div class="feature-icon green">
+                        <span>⏱</span>
+                    </div>
+                    <h3 class="feature-title green">约5分钟完成</h3>
+                    <p class="feature-subtitle">轻松快速测试</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon blue">
+                        <span>➤</span>
+                    </div>
+                    <h3 class="feature-title">16座城市匹配</h3>
+                    <p class="feature-subtitle">发现你的天选之城</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon green">
+                        <span>🤖</span>
+                    </div>
+                    <h3 class="feature-title green">智能匹配算法</h3>
+                    <p class="feature-subtitle">基于六维性格模型</p>
+                </div>
+            </div>
+            <button class="start-btn" id="startTestBtn">开始测试</button>
+        </div>
+
+        <!-- 测试页 -->
+        <div class="page test-page" id="testPage">
+            <div class="test-header">
+                <div class="test-progress-text" id="testProgressText">问题 1 / 30</div>
+                <div class="test-progress-percent" id="testProgressPercent">3%</div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 3%"></div>
+            </div>
+            <h2 class="question-title" id="questionTitle"></h2>
+            <div class="options-list" id="optionsList"></div>
+            <div class="test-footer">
+                <button class="test-btn prev" id="prevBtn">上一题</button>
+                <button class="test-btn next" id="nextBtn">下一题</button>
             </div>
         </div>
-        <h3 class="other-cities-title">其他适合你的城市</h3>
-        <div class="other-cities-grid" id="otherCitiesContainer"></div>
-        <button class="restart-btn" id="restartBtn">
-            <span>🔄</span>
-            <span>重新测试</span>
-        </button>
+
+        <!-- 结果页 -->
+        <div class="page result-page" id="resultPage">
+            <h2 class="result-title">你的天选之城</h2>
+            <p class="result-subtitle">发现与你灵魂最契合的城市</p>
+            <div class="result-card">
+                <div class="result-icon-box">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                    </svg>
+                </div>
+                <div class="match-icon">
+                    <span>✈️</span>
+                    <span>匹配度</span>
+                </div>
+                <div class="match-percent" id="mainMatchPercent">0%</div>
+                <h3 class="result-city" id="mainCityName">📍 加载中...</h3>
+                <div class="tags" id="mainCityTags"></div>
+                <div class="match-reason" id="matchReason">
+                    <div class="match-reason-title">
+                        <span>✈️</span>
+                        <span>匹配理由</span>
+                    </div>
+                    <p class="match-reason-text" id="matchReasonText"></p>
+                </div>
+            </div>
+            <h3 class="other-cities-title">其他适合你的城市</h3>
+            <div class="other-cities-grid" id="otherCitiesContainer"></div>
+            <button class="restart-btn" id="restartBtn">
+                <span>🔄</span>
+                <span>重新测试</span>
+            </button>
+        </div>
     </div>
-</div>
 
-<script>
-    // ---------- 30道题目数据 ----------
-    const questions = [
-        { text: "你更偏爱哪种城市氛围？", options: ["充满活力与创新", "宁静安逸有底蕴", "现代与传统交融", "自然风光环绕"] },
-        { text: "你对历史文化的兴趣程度？", options: ["非常着迷，喜欢探索古迹", "偶尔了解，随缘", "一般，更关注现代", "不太感兴趣"] },
-        { text: "你更喜欢哪种自然风光？", options: ["海滨/湖泊", "山川/森林", "田园/乡村", "都市公园/绿地"] },
-        { text: "你对生活节奏的偏好？", options: ["快节奏，高效充实", "适中，张弛有度", "慢节奏，悠闲自在", "随心所欲，看心情"] },
-        { text: "你对美食的态度？", options: ["热爱探索各种美食", "喜欢本地特色小吃", "家常便饭就很好", "对吃不太讲究"] },
-        { text: "你喜欢什么样的社交场合？", options: ["大型聚会，认识新朋友", "三五好友小聚", "一对一深度交流", "独处，享受安静"] },
-        { text: "你对气候的偏好？", options: ["四季分明", "温暖湿润", "干燥凉爽", "温和舒适"] },
-        { text: "你对交通便利性的要求？", options: ["地铁公交发达", "自驾出行方便", "骑行友好", "无所谓"] },
-        { text: "你更愿意住在？", options: ["市中心，繁华热闹", "近郊，安静宜居", "风景区附近", "无所谓"] },
-        { text: "你对科技创新的态度？", options: ["热衷追逐新科技", "实用主义，够用就好", "不太关注", "有点排斥"] },
-        { text: "你喜欢什么样的夜生活？", options: ["酒吧夜市，越夜越嗨", "咖啡馆书店，安静放松", "在家追剧休息", "夜跑散步"] },
-        { text: "你对房价的态度？", options: ["能接受高房价，追求地段", "希望性价比高", "偏重低房价，减轻压力", "租房为主，不买房"] },
-        { text: "你对教育的重视程度？", options: ["非常重要，关注学区", "比较重要，有资源就好", "一般，随缘", "不太考虑"] },
-        { text: "你更喜欢哪种购物方式？", options: ["线上购物", "大型商场", "传统市集", "特色小店"] },
-        { text: "你对城市绿化的要求？", options: ["越高越好，森林城市", "公园足够即可", "有基本绿化就行", "不太在意"] },
-        { text: "你对运动休闲的偏好？", options: ["登山徒步", "游泳冲浪", "健身房", "散步冥想"] },
-        { text: "你对艺术的兴趣？", options: ["非常热爱，常看展", "有兴趣，偶尔参加", "一般，不太懂", "没什么兴趣"] },
-        { text: "你对宗教信仰/民俗的态度？", options: ["尊重并好奇", "了解即可", "不排斥", "不太关心"] },
-        { text: "你更喜欢哪种居住环境？", options: ["高层公寓，视野开阔", "低层洋房，亲近地面", "独栋别墅，私密性好", "老小区，有烟火气"] },
-        { text: "你对城市噪音的容忍度？", options: ["完全不介意，热闹好", "可以接受，习惯就好", "比较敏感，需要安静", "必须绝对安静"] },
-        { text: "你对工作机会的看重？", options: ["首要因素，愿意为机会奔波", "重要但非唯一", "差不多就行", "可以远程工作"] },
-        { text: "你对当地人的性格偏好？", options: ["热情直爽", "温和内敛", "开放包容", "精明务实"] },
-        { text: "你对城市国际化程度的要求？", options: ["越高越好，多元文化", "有一定国际氛围即可", "本土特色更重要", "无所谓"] },
-        { text: "你对空气质量的重视？", options: ["必须优良，影响健康", "希望较好", "偶尔差也能接受", "不太敏感"] },
-        { text: "你对周末活动的偏好？", options: ["户外探险", "文化展览", "朋友聚餐", "宅家休息"] },
-        { text: "你对城市未来发展的态度？", options: ["希望飞速发展，机遇多", "希望稳步发展，宜居", "维持现状就好", "无所谓"] },
-        { text: "你对当地美食的依赖？", options: ["每顿都要吃特色", "偶尔尝尝", "还是习惯家乡菜", "不挑食"] },
-        { text: "你对城市地标的态度？", options: ["必须打卡", "随缘看看", "不太在意", "人少才去"] },
-        { text: "你对穿衣打扮的风格？", options: ["时尚前卫", "简约舒适", "传统保守", "混搭随性"] },
-        { text: "你对城市第一印象最看重？", options: ["第一眼的活力", "历史沉淀感", "整洁干净", "自然风光"] }
-    ];
+    <script>
+        (function() {
+            const timerBar = document.getElementById('timer-bar');
+            const urlParams = new URLSearchParams(window.location.search);
+            const expire = urlParams.get('expire');
 
-    // ---------- 城市数据 ----------
-    const cities = [
-        {
-            name: "成都",
-            tags: ["躺平型", "社交型", "美食型"],
-            desc: "巴适的成都，慢节奏中享受生活。火锅串串、茶馆麻将，这里的生活充满闲适与惬意。适合追求生活平衡、热爱美食的你。",
-            reason: "你和成都一样，懂得享受生活、热爱美食。成都的茶馆文化、火锅氛围、慢节奏生活，与你追求闲适、重视社交的性格高度契合。在这里，你可以尽情体验巴适人生。",
-            ideal: [2,1,3,2,0,1,2,1,2,2,1,2,1,0,1,2,1,2,2,2,1,2,1,1,2,1,0,1,1,2]
-        },
-        {
-            name: "杭州",
-            tags: ["文艺型", "精致型", "自然型"],
-            desc: "上有天堂，下有苏杭。杭州兼具江南诗意与现代科技，西湖美景、互联网氛围，让生活充满诗意与活力。适合追求品质生活的你。",
-            reason: "你和杭州一样，既有文艺情怀又追求精致生活。西湖的烟雨、龙井的茶香、互联网的创新，与你热爱自然、拥抱现代的性格相得益彰。",
-            ideal: [2,0,1,1,1,2,3,1,2,1,1,1,0,0,0,2,0,2,1,1,1,1,1,2,1,1,1,2,1,0]
-        },
-        {
-            name: "青岛",
-            tags: ["自然型", "社交型", "休闲型"],
-            desc: "红瓦绿树、碧海蓝天的青岛，德式建筑与海滨风情交融。啤酒、海鲜，生活惬意舒适。适合热爱海洋、追求舒适生活的你。",
-            reason: "你和青岛一样，热情爽朗又热爱自然。海滨的清新、啤酒的酣畅，与你开朗的性格完美融合。在这里，你可以面朝大海，享受生活。",
-            ideal: [3,2,0,2,1,1,0,1,3,2,0,2,2,1,0,0,2,1,1,2,2,0,2,0,0,2,1,2,2,3]
-        },
-        {
-            name: "西安",
-            tags: ["文化型", "传统型", "探索型"],
-            desc: "六朝古都西安，历史底蕴深厚。兵马俑、大雁塔、回民街，厚重的文化与美食交融。适合热爱历史、探索文化的你。",
-            reason: "你和西安一样，厚重深沉又充满历史底蕴。古城墙的沧桑、美食街的烟火，与你热爱传统、追求深度的性格相契合。",
-            ideal: [1,0,2,2,1,2,2,2,1,2,2,1,0,2,2,2,0,1,2,2,1,1,2,1,2,2,2,0,2,1]
-        },
-        {
-            name: "苏州",
-            tags: ["文艺型", "传统型", "精致型"],
-            desc: "江南水乡苏州，园林遍布、小桥流水。这里的生活温婉雅致，节奏适中。适合追求诗意生活、热爱传统文化的你。",
-            reason: "你和苏州一样，温婉细腻又充满诗意。园林的精致、昆曲的悠扬，与你追求品质、喜爱宁静的性格高度契合。",
-            ideal: [1,0,1,2,1,2,2,0,2,2,1,2,1,2,0,1,0,1,0,0,2,1,2,1,2,2,1,1,1,2]
-        },
-        {
-            name: "广州",
-            tags: ["社交型", "奋斗型", "美食型"],
-            desc: "务实包容的广州，美食遍地、生活气息浓厚。温暖的气候、适中的节奏，让生活充满烟火气。适合热爱美食、追求生活品质的你。",
-            reason: "你和广州一样，务实包容又热爱生活。早茶的精致、夜市的繁华，与你重视社交、享受当下的性格完美契合。",
-            ideal: [0,2,3,0,0,0,1,0,0,1,0,0,2,0,2,1,2,2,0,0,0,0,0,1,0,0,0,0,0,0]
-        },
-        {
-            name: "深圳",
-            tags: ["奋斗型", "创新型", "野心型"],
-            desc: "年轻活力的深圳，创新与机遇并存。这里节奏快、机会多，适合追求事业、敢于突破的你。",
-            reason: "你和深圳一样，年轻有为又敢于突破。科技园的拼搏、创业者的激情，与你追求梦想、不甘平庸的性格高度契合。",
-            ideal: [0,3,3,0,2,0,2,0,0,0,3,0,2,0,2,2,2,2,0,3,0,2,0,2,3,0,2,2,0,2]
-        },
-        {
-            name: "南京",
-            tags: ["文艺型", "文化型", "精致型"],
-            desc: "六朝古都南京，历史与现代交融。梧桐树下、秦淮河畔，这里充满文艺气息。适合热爱历史、追求文艺生活的你。",
-            reason: "你和南京一样，温婉内秀又充满底蕴。明城墙的沧桑、先锋书店的文艺，与你热爱思考、追求深度生活的性格相契合。",
-            ideal: [1,0,2,1,1,2,2,1,1,2,2,1,1,2,1,2,1,2,1,1,1,1,2,1,2,1,1,1,1,2]
-        },
-        {
-            name: "厦门",
-            tags: ["文艺型", "躺平型", "自然型"],
-            desc: "海上花园厦门，气候宜人、风景优美。鼓浪屿、环岛路，这里的生活充满文艺与浪漫。适合追求慢生活、热爱海洋的你。",
-            reason: "你和厦门一样，文艺浪漫又充满海洋气息。环岛路的海风、咖啡馆的慵懒，与你热爱自由、享受生活的性格完美融合。",
-            ideal: [3,2,0,2,1,2,1,2,3,2,1,2,2,2,0,0,0,2,2,2,2,1,2,0,2,2,2,2,2,3]
-        },
-        {
-            name: "大连",
-            tags: ["自然型", "文艺型", "躺平型"],
-            desc: "北方明珠大连，海滨风光旖旎。这里四季分明、空气清新，生活节奏适中。适合热爱自然、追求舒适生活的你。",
-            reason: "你和大连一样，爽朗又热爱自然。金石滩的海浪、滨海路的木栈道，与你喜欢运动、享受户外的生活习惯高度一致。",
-            ideal: [3,2,0,1,2,2,0,2,3,2,0,2,2,2,0,0,1,2,1,1,2,1,2,0,0,2,1,2,2,3]
-        },
-        {
-            name: "北京",
-            tags: ["奋斗型", "文化型", "野心型"],
-            desc: "作为首都，北京兼具现代化与深厚的历史底蕴。这里节奏快、机会多，四季分明的气候让你感受时光流转。适合追求事业发展的你。",
-            reason: "你和北京一样，大气磅礴又充满机遇。故宫的厚重、CBD的繁华，与你志存高远、勇于挑战的性格相得益彰。",
-            ideal: [0,0,2,0,2,0,3,0,0,2,2,0,0,2,2,2,1,2,0,3,0,0,0,1,0,0,2,0,0,0]
-        },
-        {
-            name: "上海",
-            tags: ["精致型", "奋斗型", "时尚型"],
-            desc: "魔都上海，中国最国际化的城市。现代与传统交融，快节奏中不失精致。适合追求品质生活、喜欢多元文化的你。",
-            reason: "你和上海一样，时尚精致又充满国际视野。外滩的繁华、弄堂的烟火，与你追求品质、拥抱多元的性格完美匹配。",
-            ideal: [0,1,3,0,0,0,2,0,0,0,0,0,2,0,2,1,0,2,0,3,0,2,0,1,1,0,2,0,0,0]
-        },
-        {
-            name: "重庆",
-            tags: ["社交型", "奋斗型", "冒险型"],
-            desc: "8D魔幻山城重庆，火锅江湖、夜景璀璨。这里的人热情直爽，生活充满烟火气。适合性格爽朗、热爱美食的你。",
-            reason: "你和重庆一样，热情豪爽又充满活力。山城的魔幻、火锅的火辣，与你直爽的性格和热爱挑战的精神高度契合。",
-            ideal: [0,2,3,0,0,0,2,0,0,2,0,0,2,2,2,2,2,2,0,0,0,0,2,1,2,0,0,2,2,2]
-        },
-        {
-            name: "武汉",
-            tags: ["社交型", "奋斗型", "豪爽型"],
-            desc: "九省通衢的武汉，江湖气息浓厚。热干面、樱花季，这里的生活充满烟火气与浪漫。适合性格豪爽、热爱生活的你。",
-            reason: "你和武汉一样，江湖气十足又充满生活热情。长江的奔流、街头的烟火，与你豪爽的性格和热爱生活的态度完美契合。",
-            ideal: [0,1,2,0,0,0,1,0,0,1,0,0,2,0,2,1,2,2,0,2,0,0,0,1,0,0,0,0,0,0]
-        },
-        {
-            name: "昆明",
-            tags: ["自然型", "躺平型", "探索型"],
-            desc: "春城昆明，四季如春、气候宜人。这里节奏舒缓、民族风情浓郁，生活充满阳光与温暖。适合追求舒适气候、热爱自然的你。",
-            reason: "你和昆明一样，温暖随和又热爱自然。滇池的湖光、斗南的花市，与你喜欢慢生活、享受阳光的性格相得益彰。",
-            ideal: [3,2,1,2,2,2,3,2,3,2,1,2,2,2,0,2,2,2,1,1,2,1,2,2,2,1,2,1,2,3]
-        }
-    ];
-
-    // 答案存储
-    let answers = new Array(questions.length).fill(null);
-    let currentQuestion = 0;
-
-    // DOM 元素
-    const homePage = document.getElementById('homePage');
-    const testPage = document.getElementById('testPage');
-    const resultPage = document.getElementById('resultPage');
-    const startTestBtn = document.getElementById('startTestBtn');
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
-    const restartBtn = document.getElementById('restartBtn');
-    const testProgressText = document.getElementById('testProgressText');
-    const testProgressPercent = document.getElementById('testProgressPercent');
-    const progressFill = document.getElementById('progressFill');
-    const questionTitle = document.getElementById('questionTitle');
-    const optionsList = document.getElementById('optionsList');
-
-    // 结果页元素
-    const mainMatchPercent = document.getElementById('mainMatchPercent');
-    const mainCityName = document.getElementById('mainCityName');
-    const mainCityTags = document.getElementById('mainCityTags');
-    const matchReasonText = document.getElementById('matchReasonText');
-    const otherCitiesContainer = document.getElementById('otherCitiesContainer');
-
-    function showPage(page) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        page.classList.add('active');
-        window.scrollTo(0, 0);
-    }
-
-    function renderQuestion() {
-        const q = questions[currentQuestion];
-        questionTitle.textContent = q.text;
-        let html = '';
-        q.options.forEach((opt, idx) => {
-            const selectedClass = answers[currentQuestion] === idx ? 'selected' : '';
-            html += `
-                <div class="option-item ${selectedClass}" data-opt="${idx}">
-                    <span class="option-radio"></span>
-                    <span class="option-text">${opt}</span>
-                </div>
-            `;
-        });
-        optionsList.innerHTML = html;
-
-        document.querySelectorAll('.option-item').forEach(item => {
-            item.addEventListener('click', () => {
-                const optIdx = parseInt(item.dataset.opt);
-                answers[currentQuestion] = optIdx;
-                document.querySelectorAll('.option-item').forEach(oi => oi.classList.remove('selected'));
-                item.classList.add('selected');
-            });
-        });
-
-        const progress = ((currentQuestion + 1) / questions.length) * 100;
-        testProgressText.textContent = `问题 ${currentQuestion + 1} / ${questions.length}`;
-        testProgressPercent.textContent = `${Math.round(progress)}%`;
-        progressFill.style.width = `${progress}%`;
-
-        if (currentQuestion === 0) {
-            prevBtn.classList.remove('active');
-            prevBtn.disabled = true;
-        } else {
-            prevBtn.classList.add('active');
-            prevBtn.disabled = false;
-        }
-
-        nextBtn.textContent = currentQuestion === questions.length - 1 ? '查看结果' : '下一题';
-    }
-
-    function calculateMatches() {
-        const userVec = answers.slice();
-        const scores = cities.map(city => {
-            const idealVec = city.ideal;
-            let diff = 0;
-            for (let i = 0; i < userVec.length; i++) {
-                diff += Math.abs(userVec[i] - idealVec[i]);
+            if (!expire) {
+                // 无 expire 参数，显示错误并清空页面
+                document.body.innerHTML = '<div style="text-align:center; margin-top:50px; font-family: sans-serif; color:#23b8d8; font-size:20px;">🔒 无效的访问链接</div>';
+                window.stop();
+                return;
             }
-            const maxDiff = 3 * questions.length;
-            const similarity = 100 - (diff / maxDiff) * 100;
-            return { city, similarity };
-        });
-        scores.sort((a, b) => b.similarity - a.similarity);
-        return scores;
-    }
 
-    function showResult() {
-        const scores = calculateMatches();
-        const main = scores[0];
-        const others = scores.slice(1, 7);
+            const now = Math.floor(Date.now() / 1000);
+            const expireTime = parseInt(expire, 10);
 
-        mainMatchPercent.textContent = `${Math.round(main.similarity)}%`;
-        mainCityName.textContent = `📍 你的天选之城：${main.city.name}`;
-        const tags = main.city.tags;
-        mainCityTags.innerHTML = tags.map(t => `<span class="tag light-blue">${t}</span>`).join('');
-        matchReasonText.textContent = main.city.reason;
+            if (isNaN(expireTime) || expireTime <= 0) {
+                document.body.innerHTML = '<div style="text-align:center; margin-top:50px; font-family: sans-serif; color:#23b8d8; font-size:20px;">⚠️ 链接格式错误</div>';
+                window.stop();
+                return;
+            }
 
-        otherCitiesContainer.innerHTML = others.map(item => {
-            const city = item.city;
-            const match = Math.round(item.similarity);
-            const tagHtml = city.tags.map(t => `<span class="tag light-blue">${t}</span>`).join('');
-            return `
-                <div class="other-city-card">
-                    <div class="other-city-header">
-                        <div class="other-city-name">
-                            <span>📍</span>
-                            <span>${city.name}</span>
+            if (now > expireTime) {
+                document.body.innerHTML = '<div style="text-align:center; margin-top:50px; font-family: sans-serif; color:#23b8d8; font-size:20px;">⏳ 此链接已过期，请重新购买</div>';
+                window.stop();
+                return;
+            }
+
+            // 链接有效，显示倒计时条并更新内容
+            timerBar.classList.remove('hidden');
+
+            function updateTimer() {
+                const now = Math.floor(Date.now() / 1000);
+                const remaining = expireTime - now;
+                if (remaining <= 0) {
+                    // 如果倒计时结束，显示过期信息并刷新页面或停止
+                    document.body.innerHTML = '<div style="text-align:center; margin-top:50px; font-family: sans-serif; color:#23b8d8; font-size:20px;">⏳ 此链接已过期，请重新购买</div>';
+                    window.stop();
+                    return;
+                }
+                const minutes = Math.floor(remaining / 60);
+                const seconds = remaining % 60;
+                timerBar.innerHTML = `⏰ 本链接剩余有效时间：${minutes}分${seconds}秒（过期后链接将自动失效）`;
+            }
+
+            updateTimer();
+            setInterval(updateTimer, 1000); // 每秒更新倒计时
+        })();
+    </script>
+
+    <script>
+        // ---------- 30道题目数据 ----------
+        const questions = [
+            { text: "你更偏爱哪种城市氛围？", options: ["充满活力与创新", "宁静安逸有底蕴", "现代与传统交融", "自然风光环绕"] },
+            { text: "你对历史文化的兴趣程度？", options: ["非常着迷，喜欢探索古迹", "偶尔了解，随缘", "一般，更关注现代", "不太感兴趣"] },
+            { text: "你更喜欢哪种自然风光？", options: ["海滨/湖泊", "山川/森林", "田园/乡村", "都市公园/绿地"] },
+            { text: "你对生活节奏的偏好？", options: ["快节奏，高效充实", "适中，张弛有度", "慢节奏，悠闲自在", "随心所欲，看心情"] },
+            { text: "你对美食的态度？", options: ["热爱探索各种美食", "喜欢本地特色小吃", "家常便饭就很好", "对吃不太讲究"] },
+            { text: "你喜欢什么样的社交场合？", options: ["大型聚会，认识新朋友", "三五好友小聚", "一对一深度交流", "独处，享受安静"] },
+            { text: "你对气候的偏好？", options: ["四季分明", "温暖湿润", "干燥凉爽", "温和舒适"] },
+            { text: "你对交通便利性的要求？", options: ["地铁公交发达", "自驾出行方便", "骑行友好", "无所谓"] },
+            { text: "你更愿意住在？", options: ["市中心，繁华热闹", "近郊，安静宜居", "风景区附近", "无所谓"] },
+            { text: "你对科技创新的态度？", options: ["热衷追逐新科技", "实用主义，够用就好", "不太关注", "有点排斥"] },
+            { text: "你喜欢什么样的夜生活？", options: ["酒吧夜市，越夜越嗨", "咖啡馆书店，安静放松", "在家追剧休息", "夜跑散步"] },
+            { text: "你对房价的态度？", options: ["能接受高房价，追求地段", "希望性价比高", "偏重低房价，减轻压力", "租房为主，不买房"] },
+            { text: "你对教育的重视程度？", options: ["非常重要，关注学区", "比较重要，有资源就好", "一般，随缘", "不太考虑"] },
+            { text: "你更喜欢哪种购物方式？", options: ["线上购物", "大型商场", "传统市集", "特色小店"] },
+            { text: "你对城市绿化的要求？", options: ["越高越好，森林城市", "公园足够即可", "有基本绿化就行", "不太在意"] },
+            { text: "你对运动休闲的偏好？", options: ["登山徒步", "游泳冲浪", "健身房", "散步冥想"] },
+            { text: "你对艺术的兴趣？", options: ["非常热爱，常看展", "有兴趣，偶尔参加", "一般，不太懂", "没什么兴趣"] },
+            { text: "你对宗教信仰/民俗的态度？", options: ["尊重并好奇", "了解即可", "不排斥", "不太关心"] },
+            { text: "你更喜欢哪种居住环境？", options: ["高层公寓，视野开阔", "低层洋房，亲近地面", "独栋别墅，私密性好", "老小区，有烟火气"] },
+            { text: "你对城市噪音的容忍度？", options: ["完全不介意，热闹好", "可以接受，习惯就好", "比较敏感，需要安静", "必须绝对安静"] },
+            { text: "你对工作机会的看重？", options: ["首要因素，愿意为机会奔波", "重要但非唯一", "差不多就行", "可以远程工作"] },
+            { text: "你对当地人的性格偏好？", options: ["热情直爽", "温和内敛", "开放包容", "精明务实"] },
+            { text: "你对城市国际化程度的要求？", options: ["越高越好，多元文化", "有一定国际氛围即可", "本土特色更重要", "无所谓"] },
+            { text: "你对空气质量的重视？", options: ["必须优良，影响健康", "希望较好", "偶尔差也能接受", "不太敏感"] },
+            { text: "你对周末活动的偏好？", options: ["户外探险", "文化展览", "朋友聚餐", "宅家休息"] },
+            { text: "你对城市未来发展的态度？", options: ["希望飞速发展，机遇多", "希望稳步发展，宜居", "维持现状就好", "无所谓"] },
+            { text: "你对当地美食的依赖？", options: ["每顿都要吃特色", "偶尔尝尝", "还是习惯家乡菜", "不挑食"] },
+            { text: "你对城市地标的态度？", options: ["必须打卡", "随缘看看", "不太在意", "人少才去"] },
+            { text: "你对穿衣打扮的风格？", options: ["时尚前卫", "简约舒适", "传统保守", "混搭随性"] },
+            { text: "你对城市第一印象最看重？", options: ["第一眼的活力", "历史沉淀感", "整洁干净", "自然风光"] }
+        ];
+
+        // ---------- 城市数据 ----------
+        const cities = [
+            {
+                name: "成都",
+                tags: ["躺平型", "社交型", "美食型"],
+                desc: "巴适的成都，慢节奏中享受生活。火锅串串、茶馆麻将，这里的生活充满闲适与惬意。适合追求生活平衡、热爱美食的你。",
+                reason: "你和成都一样，懂得享受生活、热爱美食。成都的茶馆文化、火锅氛围、慢节奏生活，与你追求闲适、重视社交的性格高度契合。在这里，你可以尽情体验巴适人生。",
+                ideal: [2,1,3,2,0,1,2,1,2,2,1,2,1,0,1,2,1,2,2,2,1,2,1,1,2,1,0,1,1,2]
+            },
+            {
+                name: "杭州",
+                tags: ["文艺型", "精致型", "自然型"],
+                desc: "上有天堂，下有苏杭。杭州兼具江南诗意与现代科技，西湖美景、互联网氛围，让生活充满诗意与活力。适合追求品质生活的你。",
+                reason: "你和杭州一样，既有文艺情怀又追求精致生活。西湖的烟雨、龙井的茶香、互联网的创新，与你热爱自然、拥抱现代的性格相得益彰。",
+                ideal: [2,0,1,1,1,2,3,1,2,1,1,1,0,0,0,2,0,2,1,1,1,1,1,2,1,1,1,2,1,0]
+            },
+            {
+                name: "青岛",
+                tags: ["自然型", "社交型", "休闲型"],
+                desc: "红瓦绿树、碧海蓝天的青岛，德式建筑与海滨风情交融。啤酒、海鲜，生活惬意舒适。适合热爱海洋、追求舒适生活的你。",
+                reason: "你和青岛一样，热情爽朗又热爱自然。海滨的清新、啤酒的酣畅，与你开朗的性格完美融合。在这里，你可以面朝大海，享受生活。",
+                ideal: [3,2,0,2,1,1,0,1,3,2,0,2,2,1,0,0,2,1,1,2,2,0,2,0,0,2,1,2,2,3]
+            },
+            {
+                name: "西安",
+                tags: ["文化型", "传统型", "探索型"],
+                desc: "六朝古都西安，历史底蕴深厚。兵马俑、大雁塔、回民街，厚重的文化与美食交融。适合热爱历史、探索文化的你。",
+                reason: "你和西安一样，厚重深沉又充满历史底蕴。古城墙的沧桑、美食街的烟火，与你热爱传统、追求深度的性格相契合。",
+                ideal: [1,0,2,2,1,2,2,2,1,2,2,1,0,2,2,2,0,1,2,2,1,1,2,1,2,2,2,0,2,1]
+            },
+            {
+                name: "苏州",
+                tags: ["文艺型", "传统型", "精致型"],
+                desc: "江南水乡苏州，园林遍布、小桥流水。这里的生活温婉雅致，节奏适中。适合追求诗意生活、热爱传统文化的你。",
+                reason: "你和苏州一样，温婉细腻又充满诗意。园林的精致、昆曲的悠扬，与你追求品质、喜爱宁静的性格高度契合。",
+                ideal: [1,0,1,2,1,2,2,0,2,2,1,2,1,2,0,1,0,1,0,0,2,1,2,1,2,2,1,1,1,2]
+            },
+            {
+                name: "广州",
+                tags: ["社交型", "奋斗型", "美食型"],
+                desc: "务实包容的广州，美食遍地、生活气息浓厚。温暖的气候、适中的节奏，让生活充满烟火气。适合热爱美食、追求生活品质的你。",
+                reason: "你和广州一样，务实包容又热爱生活。早茶的精致、夜市的繁华，与你重视社交、享受当下的性格完美契合。",
+                ideal: [0,2,3,0,0,0,1,0,0,1,0,0,2,0,2,1,2,2,0,0,0,0,0,1,0,0,0,0,0,0]
+            },
+            {
+                name: "深圳",
+                tags: ["奋斗型", "创新型", "野心型"],
+                desc: "年轻活力的深圳，创新与机遇并存。这里节奏快、机会多，适合追求事业、敢于突破的你。",
+                reason: "你和深圳一样，年轻有为又敢于突破。科技园的拼搏、创业者的激情，与你追求梦想、不甘平庸的性格高度契合。",
+                ideal: [0,3,3,0,2,0,2,0,0,0,3,0,2,0,2,2,2,2,0,3,0,2,0,2,3,0,2,2,0,2]
+            },
+            {
+                name: "南京",
+                tags: ["文艺型", "文化型", "精致型"],
+                desc: "六朝古都南京，历史与现代交融。梧桐树下、秦淮河畔，这里充满文艺气息。适合热爱历史、追求文艺生活的你。",
+                reason: "你和南京一样，温婉内秀又充满底蕴。明城墙的沧桑、先锋书店的文艺，与你热爱思考、追求深度生活的性格相契合。",
+                ideal: [1,0,2,1,1,2,2,1,1,2,2,1,1,2,1,2,1,2,1,1,1,1,2,1,2,1,1,1,1,2]
+            },
+            {
+                name: "厦门",
+                tags: ["文艺型", "躺平型", "自然型"],
+                desc: "海上花园厦门，气候宜人、风景优美。鼓浪屿、环岛路，这里的生活充满文艺与浪漫。适合追求慢生活、热爱海洋的你。",
+                reason: "你和厦门一样，文艺浪漫又充满海洋气息。环岛路的海风、咖啡馆的慵懒，与你热爱自由、享受生活的性格完美融合。",
+                ideal: [3,2,0,2,1,2,1,2,3,2,1,2,2,2,0,0,0,2,2,2,2,1,2,0,2,2,2,2,2,3]
+            },
+            {
+                name: "大连",
+                tags: ["自然型", "文艺型", "躺平型"],
+                desc: "北方明珠大连，海滨风光旖旎。这里四季分明、空气清新，生活节奏适中。适合热爱自然、追求舒适生活的你。",
+                reason: "你和大连一样，爽朗又热爱自然。金石滩的海浪、滨海路的木栈道，与你喜欢运动、享受户外的生活习惯高度一致。",
+                ideal: [3,2,0,1,2,2,0,2,3,2,0,2,2,2,0,0,1,2,1,1,2,1,2,0,0,2,1,2,2,3]
+            },
+            {
+                name: "北京",
+                tags: ["奋斗型", "文化型", "野心型"],
+                desc: "作为首都，北京兼具现代化与深厚的历史底蕴。这里节奏快、机会多，四季分明的气候让你感受时光流转。适合追求事业发展的你。",
+                reason: "你和北京一样，大气磅礴又充满机遇。故宫的厚重、CBD的繁华，与你志存高远、勇于挑战的性格相得益彰。",
+                ideal: [0,0,2,0,2,0,3,0,0,2,2,0,0,2,2,2,1,2,0,3,0,0,0,1,0,0,2,0,0,0]
+            },
+            {
+                name: "上海",
+                tags: ["精致型", "奋斗型", "时尚型"],
+                desc: "魔都上海，中国最国际化的城市。现代与传统交融，快节奏中不失精致。适合追求品质生活、喜欢多元文化的你。",
+                reason: "你和上海一样，时尚精致又充满国际视野。外滩的繁华、弄堂的烟火，与你追求品质、拥抱多元的性格完美匹配。",
+                ideal: [0,1,3,0,0,0,2,0,0,0,0,0,2,0,2,1,0,2,0,3,0,2,0,1,1,0,2,0,0,0]
+            },
+            {
+                name: "重庆",
+                tags: ["社交型", "奋斗型", "冒险型"],
+                desc: "8D魔幻山城重庆，火锅江湖、夜景璀璨。这里的人热情直爽，生活充满烟火气。适合性格爽朗、热爱美食的你。",
+                reason: "你和重庆一样，热情豪爽又充满活力。山城的魔幻、火锅的火辣，与你直爽的性格和热爱挑战的精神高度契合。",
+                ideal: [0,2,3,0,0,0,2,0,0,2,0,0,2,2,2,2,2,2,0,0,0,0,2,1,2,0,0,2,2,2]
+            },
+            {
+                name: "武汉",
+                tags: ["社交型", "奋斗型", "豪爽型"],
+                desc: "九省通衢的武汉，江湖气息浓厚。热干面、樱花季，这里的生活充满烟火气与浪漫。适合性格豪爽、热爱生活的你。",
+                reason: "你和武汉一样，江湖气十足又充满生活热情。长江的奔流、街头的烟火，与你豪爽的性格和热爱生活的态度完美契合。",
+                ideal: [0,1,2,0,0,0,1,0,0,1,0,0,2,0,2,1,2,2,0,2,0,0,0,1,0,0,0,0,0,0]
+            },
+            {
+                name: "昆明",
+                tags: ["自然型", "躺平型", "探索型"],
+                desc: "春城昆明，四季如春、气候宜人。这里节奏舒缓、民族风情浓郁，生活充满阳光与温暖。适合追求舒适气候、热爱自然的你。",
+                reason: "你和昆明一样，温暖随和又热爱自然。滇池的湖光、斗南的花市，与你喜欢慢生活、享受阳光的性格相得益彰。",
+                ideal: [3,2,1,2,2,2,3,2,3,2,1,2,2,2,0,2,2,2,1,1,2,1,2,2,2,1,2,1,2,3]
+            }
+        ];
+
+        // 答案存储
+        let answers = new Array(questions.length).fill(null);
+        let currentQuestion = 0;
+
+        // DOM 元素
+        const homePage = document.getElementById('homePage');
+        const testPage = document.getElementById('testPage');
+        const resultPage = document.getElementById('resultPage');
+        const startTestBtn = document.getElementById('startTestBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const restartBtn = document.getElementById('restartBtn');
+        const testProgressText = document.getElementById('testProgressText');
+        const testProgressPercent = document.getElementById('testProgressPercent');
+        const progressFill = document.getElementById('progressFill');
+        const questionTitle = document.getElementById('questionTitle');
+        const optionsList = document.getElementById('optionsList');
+
+        // 结果页元素
+        const mainMatchPercent = document.getElementById('mainMatchPercent');
+        const mainCityName = document.getElementById('mainCityName');
+        const mainCityTags = document.getElementById('mainCityTags');
+        const matchReasonText = document.getElementById('matchReasonText');
+        const otherCitiesContainer = document.getElementById('otherCitiesContainer');
+
+        function showPage(page) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            page.classList.add('active');
+            window.scrollTo(0, 0);
+        }
+
+        function renderQuestion() {
+            const q = questions[currentQuestion];
+            questionTitle.textContent = q.text;
+            let html = '';
+            q.options.forEach((opt, idx) => {
+                const selectedClass = answers[currentQuestion] === idx ? 'selected' : '';
+                html += `
+                    <div class="option-item ${selectedClass}" data-opt="${idx}">
+                        <span class="option-radio"></span>
+                        <span class="option-text">${opt}</span>
+                    </div>
+                `;
+            });
+            optionsList.innerHTML = html;
+
+            document.querySelectorAll('.option-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const optIdx = parseInt(item.dataset.opt);
+                    answers[currentQuestion] = optIdx;
+                    document.querySelectorAll('.option-item').forEach(oi => oi.classList.remove('selected'));
+                    item.classList.add('selected');
+                });
+            });
+
+            const progress = ((currentQuestion + 1) / questions.length) * 100;
+            testProgressText.textContent = `问题 ${currentQuestion + 1} / ${questions.length}`;
+            testProgressPercent.textContent = `${Math.round(progress)}%`;
+            progressFill.style.width = `${progress}%`;
+
+            if (currentQuestion === 0) {
+                prevBtn.classList.remove('active');
+                prevBtn.disabled = true;
+            } else {
+                prevBtn.classList.add('active');
+                prevBtn.disabled = false;
+            }
+
+            nextBtn.textContent = currentQuestion === questions.length - 1 ? '查看结果' : '下一题';
+        }
+
+        function calculateMatches() {
+            const userVec = answers.slice();
+            const scores = cities.map(city => {
+                const idealVec = city.ideal;
+                let diff = 0;
+                for (let i = 0; i < userVec.length; i++) {
+                    diff += Math.abs(userVec[i] - idealVec[i]);
+                }
+                const maxDiff = 3 * questions.length;
+                const similarity = 100 - (diff / maxDiff) * 100;
+                return { city, similarity };
+            });
+            scores.sort((a, b) => b.similarity - a.similarity);
+            return scores;
+        }
+
+        function showResult() {
+            const scores = calculateMatches();
+            const main = scores[0];
+            const others = scores.slice(1, 7);
+
+            mainMatchPercent.textContent = `${Math.round(main.similarity)}%`;
+            mainCityName.textContent = `📍 你的天选之城：${main.city.name}`;
+            const tags = main.city.tags;
+            mainCityTags.innerHTML = tags.map(t => `<span class="tag light-blue">${t}</span>`).join('');
+            matchReasonText.textContent = main.city.reason;
+
+            otherCitiesContainer.innerHTML = others.map(item => {
+                const city = item.city;
+                const match = Math.round(item.similarity);
+                const tagHtml = city.tags.map(t => `<span class="tag light-blue">${t}</span>`).join('');
+                return `
+                    <div class="other-city-card">
+                        <div class="other-city-header">
+                            <div class="other-city-name">
+                                <span>📍</span>
+                                <span>${city.name}</span>
+                            </div>
+                            <div class="other-city-match">${match}%</div>
                         </div>
-                        <div class="other-city-match">${match}%</div>
+                        <div class="other-city-tags">
+                            ${tagHtml}
+                        </div>
+                        <p class="other-city-desc">${city.desc}</p>
                     </div>
-                    <div class="other-city-tags">
-                        ${tagHtml}
-                    </div>
-                    <p class="other-city-desc">${city.desc}</p>
-                </div>
-            `;
-        }).join('');
+                `;
+            }).join('');
 
-        showPage(resultPage);
-    }
+            showPage(resultPage);
+        }
 
-    startTestBtn.addEventListener('click', () => {
-        answers.fill(null);
-        currentQuestion = 0;
-        renderQuestion();
-        showPage(testPage);
-    });
-
-    prevBtn.addEventListener('click', () => {
-        if (currentQuestion > 0) {
-            currentQuestion--;
+        startTestBtn.addEventListener('click', () => {
+            answers.fill(null);
+            currentQuestion = 0;
             renderQuestion();
-        }
-    });
+            showPage(testPage);
+        });
 
-    nextBtn.addEventListener('click', () => {
-        if (answers[currentQuestion] === undefined) {
-            alert('请选择一个选项');
-            return;
-        }
-        if (currentQuestion < questions.length - 1) {
-            currentQuestion++;
-            renderQuestion();
-        } else {
-            showResult();
-        }
-    });
+        prevBtn.addEventListener('click', () => {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                renderQuestion();
+            }
+        });
 
-    restartBtn.addEventListener('click', () => {
-        showPage(homePage);
-    });
-</script>
+        nextBtn.addEventListener('click', () => {
+            if (answers[currentQuestion] === undefined) {
+                alert('请选择一个选项');
+                return;
+            }
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                renderQuestion();
+            } else {
+                showResult();
+            }
+        });
+
+        restartBtn.addEventListener('click', () => {
+            showPage(homePage);
+        });
+    </script>
 </body>
 </html>
