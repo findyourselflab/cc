@@ -17,7 +17,7 @@
             min-height: 100vh;
             display: flex;
             justify-content: center;
-            align-items: flex-start; /* 改为顶部对齐，避免内容被截断 */
+            align-items: flex-start;
             padding: 20px;
         }
 
@@ -30,18 +30,22 @@
             overflow: hidden;
         }
 
-        /* 倒计时条样式：居中显示 */
+        /* 倒计时条样式（确保居中） */
         .timer-bar {
             position: sticky;
             top: 0;
             background-color: #e0f2fe;
             color: #0369a1;
             padding: 10px;
-            text-align: center;
             font-size: 14px;
             border-bottom: 2px solid #23b8d8;
             z-index: 1000;
             width: 100%;
+            text-align: center !important; /* 强制居中 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
         }
 
         /* 首页样式 */
@@ -261,7 +265,7 @@
             font-size: 16px;
             color: #4a5568;
             vertical-align: middle;
-            word-break: break-word; /* 防止长文本溢出 */
+            word-break: break-word;
         }
 
         .test-footer {
@@ -525,7 +529,6 @@
     </style>
 </head>
 <body>
-<!-- 过期验证脚本（放在最顶部，但会动态插入计时条） -->
 <script>
 (function() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -552,13 +555,12 @@
         return;
     }
 
-    // 链接有效，添加倒计时条（使用 class 以便样式控制）
     const remaining = expireTime - now;
     const remainingMinutes = Math.floor(remaining / 60);
     const remainingSeconds = remaining % 60;
 
     const timerDiv = document.createElement('div');
-    timerDiv.className = 'timer-bar'; // 使用 CSS 类
+    timerDiv.className = 'timer-bar'; // 使用类，确保样式一致
     timerDiv.innerHTML = `⏰ 本链接剩余有效时间：${remainingMinutes}分${remainingSeconds}秒（过期后链接将自动失效）`;
 
     document.body.prepend(timerDiv);
@@ -708,7 +710,7 @@
             tags: ["躺平型", "社交型", "美食型"],
             desc: "巴适的成都，慢节奏中享受生活。火锅串串、茶馆麻将，这里的生活充满闲适与惬意。适合追求生活平衡、热爱美食的你。",
             reason: "你和成都一样，懂得享受生活、热爱美食。成都的茶馆文化、火锅氛围、慢节奏生活，与你追求闲适、重视社交的性格高度契合。在这里，你可以尽情体验巴适人生。",
-            ideal: [2,1,3,2,0,1,2,1,2,2,1,2,1,0,1,2,1,2,2,2,1,2,1,1,2,1,0,1,1,2] // 每个问题理想选项索引（0-3）
+            ideal: [2,1,3,2,0,1,2,1,2,2,1,2,1,0,1,2,1,2,2,2,1,2,1,1,2,1,0,1,1,2]
         },
         {
             name: "杭州",
@@ -856,24 +858,20 @@
         });
         optionsList.innerHTML = html;
 
-        // 绑定点击事件
         document.querySelectorAll('.option-item').forEach(item => {
             item.addEventListener('click', () => {
                 const optIdx = parseInt(item.dataset.opt);
                 answers[currentQuestion] = optIdx;
-                // 清除其他选中
                 document.querySelectorAll('.option-item').forEach(oi => oi.classList.remove('selected'));
                 item.classList.add('selected');
             });
         });
 
-        // 更新进度
         const progress = ((currentQuestion + 1) / questions.length) * 100;
         testProgressText.textContent = `问题 ${currentQuestion + 1} / ${questions.length}`;
         testProgressPercent.textContent = `${Math.round(progress)}%`;
         progressFill.style.width = `${progress}%`;
 
-        // 上一题按钮状态
         if (currentQuestion === 0) {
             prevBtn.classList.remove('active');
             prevBtn.disabled = true;
@@ -882,26 +880,21 @@
             prevBtn.disabled = false;
         }
 
-        // 下一题按钮文字
         nextBtn.textContent = currentQuestion === questions.length - 1 ? '查看结果' : '下一题';
     }
 
-    // 计算与每个城市的匹配度（余弦相似度，归一化到0-100%）
     function calculateMatches() {
-        const userVec = answers.slice(); // 0-3
+        const userVec = answers.slice();
         const scores = cities.map(city => {
             const idealVec = city.ideal;
-            // 计算相似度：用差值绝对值转换成相似度（值越小越相似）
             let diff = 0;
             for (let i = 0; i < userVec.length; i++) {
                 diff += Math.abs(userVec[i] - idealVec[i]);
             }
-            // 最大可能差值：每个问题最大差3，30题共90
             const maxDiff = 3 * questions.length;
             const similarity = 100 - (diff / maxDiff) * 100;
             return { city, similarity };
         });
-        // 按相似度降序
         scores.sort((a, b) => b.similarity - a.similarity);
         return scores;
     }
@@ -909,17 +902,14 @@
     function showResult() {
         const scores = calculateMatches();
         const main = scores[0];
-        const others = scores.slice(1, 7); // 取第2到第7名
+        const others = scores.slice(1, 7);
 
-        // 主城市
         mainMatchPercent.textContent = `${Math.round(main.similarity)}%`;
         mainCityName.textContent = `📍 你的天选之城：${main.city.name}`;
-        // 主城市标签（城市自身标签 + 性格标签）
         const tags = main.city.tags;
         mainCityTags.innerHTML = tags.map(t => `<span class="tag light-blue">${t}</span>`).join('');
         matchReasonText.textContent = main.city.reason;
 
-        // 其他城市
         otherCitiesContainer.innerHTML = others.map(item => {
             const city = item.city;
             const match = Math.round(item.similarity);
@@ -944,9 +934,7 @@
         showPage(resultPage);
     }
 
-    // 事件监听
     startTestBtn.addEventListener('click', () => {
-        // 重置状态
         answers.fill(null);
         currentQuestion = 0;
         renderQuestion();
