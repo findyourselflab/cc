@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>天赋自测 · 多元智能探索</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f4effa;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 0;
+        }
+
+        /* 倒计时条样式 */
+        #timer-bar {
+            width: 100%;
+            background-color: #e0f2fe;
+            color: #0369a1;
+            padding: 10px 0;
+            font-size: 14px;
+            border-bottom: 2px solid #8a56d1;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+        }
+        #timer-bar.hidden {
+            display: none;
+        }
+
+        .app-container {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            width: 100%;
+            max-width: 900px;
+            margin: 20px;
+            padding: 40px;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        h1 {
+            font-size: 36px;
+            font-weight: 700;
+            color: #222222;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .description {
+            color: #444444;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 32px;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 12px;
+            background-color: #e9e9f0;
+            border-radius: 6px;
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: #8a56d1;
+            border-radius: 6px;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            color: #444444;
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 16px;
+        }
+
+        .question-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: #222222;
+            margin-bottom: 24px;
+        }
+
+        .options-list {
+            list-style: none;
+            margin-bottom: 40px;
+        }
+
+        .option-item {
+            border: 1px solid #e0e0e6;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #444444;
+            font-size: 16px;
+        }
+
+        .option-item:hover {
+            border-color: #8a56d1;
+            background-color: #f9f5ff;
+        }
+
+        .option-item.selected {
+            border-color: #8a56d1;
+            background-color: #f9f5ff;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 32px;
+            border: none;
+            border-radius: 24px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background-color: #8a56d1;
+            color: #ffffff;
+        }
+
+        .btn-primary:hover {
+            background-color: #7644b8;
+        }
+
+        .btn-secondary {
+            background-color: #ffffff;
+            color: #8a56d1;
+            border: 1px solid #8a56d1;
+        }
+
+        .btn-secondary:hover {
+            background-color: #f9f5ff;
+        }
+
+        .btn-secondary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            border-color: #ccc;
+            color: #999;
+        }
+
+        .result-header {
+            font-size: 28px;
+            font-weight: 700;
+            color: #222222;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .result-summary {
+            color: #444444;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 32px;
+            text-align: center;
+        }
+
+        .radar-chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            height: 400px;
+            margin: 0 auto 40px;
+        }
+
+        .radar-chart-container svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .talent-scores {
+            margin-bottom: 40px;
+        }
+
+        .talent-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px; /* 增大间距 */
+        }
+
+        .talent-label {
+            width: 120px;
+            font-size: 16px;
+            color: #444444;
+        }
+
+        .talent-bar-container {
+            flex: 1;
+            height: 24px;
+            background-color: #e9e9f0;
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 0 16px;
+        }
+
+        .talent-bar {
+            height: 100%;
+            background-color: #8a56d1;
+            border-radius: 12px;
+            transition: width 0.5s ease;
+        }
+
+        .talent-level {
+            width: 180px;
+            text-align: right;
+            font-size: 14px;
+            color: #444444;
+            white-space: nowrap;
+        }
+
+        .talent-desc {
+            font-size: 14px;
+            color: #666;
+            margin-top: 4px;
+            margin-left: 136px;
+            line-height: 1.5;
+            margin-bottom: 24px; /* 增加段落后间距 */
+        }
+
+        .percentile-badge {
+            background-color: #8a56d1;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-left: 8px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <!-- 倒计时条容器 -->
+    <div id="timer-bar" class="hidden"></div>
+
+    <div class="app-container">
+        <!-- 开始页 -->
+        <div id="start-page" class="page active">
+            <h1>天赋自测</h1>
+            <div class="description">
+                <p>说明：总共40题，每题5个选项。请根据您的真实感受选择最符合的选项。</p>
+            </div>
+            <div class="button-group">
+                <button class="btn-primary" id="start-test-btn">开始测试</button>
+            </div>
+        </div>
+
+        <!-- 答题页 -->
+        <div id="quiz-page" class="page">
+            <h1>天赋自测</h1>
+            <div class="description">
+                <p>说明：总共40题，每题5个选项。</p>
+            </div>
+            <div class="progress-text" id="progress-text">1 / 40</div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+            <div class="question-text" id="question-text"></div>
+            <ul class="options-list" id="options-list"></ul>
+            <div class="button-group">
+                <button class="btn-secondary" id="prev-btn" disabled>上一题</button>
+                <button class="btn-primary" id="next-btn">下一题</button>
+            </div>
+        </div>
+
+        <!-- 结果页 -->
+        <div id="result-page" class="page">
+            <h1 class="result-header">恭喜完成测试</h1>
+            <p class="result-summary" id="result-summary"></p>
+            <h2 style="font-size: 24px; margin-bottom: 24px;">天赋能力图</h2>
+            <div class="radar-chart-container" id="radar-chart">
+                <svg viewBox="0 0 400 400">
+                    <!-- 背景网格将由JS动态绘制，以免覆盖 -->
+                    <g id="radar-background"></g>
+                    <polygon id="radar-polygon" fill="rgba(138,86,209,0.2)" stroke="#8a56d1" stroke-width="2" />
+                    <g id="radar-labels"></g>
+                </svg>
+            </div>
+            <h2 style="font-size: 24px; margin-bottom: 24px;">各项天赋分值</h2>
+            <div class="talent-scores" id="talent-scores"></div>
+            <div class="button-group">
+                <button class="btn-primary" id="restart-btn">重新测试</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ---------- 过期验证脚本 (放在最顶部执行) ----------
+        (function() {
+            const timerBar = document.getElementById('timer-bar');
+            const urlParams = new URLSearchParams(window.location.search);
+            const expire = urlParams.get('expire');
+
+            if (!expire) {
+                document.body.innerHTML = '<div style="text-align:center; margin-top:50px; font-family: sans-serif; color:#8a56d1; font-size:20px;">🔒 无效的访问链接</div>';
+                window.stop();
+                return;
+            }
+
+            const now = Math.floor(Date.now() / 1000);
+            const expireTime = parseInt(expire, 10);
+
+            if (isNaN(expireTime) || expireTime <= 0) {
+                document.body.innerHTML = '<div style="text-align:center; margin-top:50px; font-family: sans-serif; color:#8a56d1; font-size:20px;">⚠️ 链接格式错误</div>';
+                window.stop();
+                return;
+            }
+
+            if (now > expireTime) {
+                document.body.innerHTML = '<div style="text-align:center; margin-top:50px; font-family: sans-serif; color:#8a56d1; font-size:20px;">⏳ 此链接已过期，请重新购买</div>';
+                window.stop();
+                return;
+            }
+
+            timerBar.classList.remove('hidden');
+
+            function updateTimer() {
+                const now = Math.floor(Date.now() / 1000);
+                const remaining = expireTime - now;
+                if (remaining <= 0) {
+                    document.body.innerHTML = '<div style="text-align:center; margin-top:50px; font-family: sans-serif; color:#8a56d1; font-size:20px;">⏳ 此链接已过期，请重新购买</div>';
+                    window.stop();
+                    return;
+                }
+                const minutes = Math.floor(remaining / 60);
+                const seconds = remaining % 60;
+                timerBar.innerHTML = `⏰ 本链接剩余有效时间：${minutes}分${seconds}秒（过期后链接将自动失效）`;
+            }
+
+            updateTimer();
+            setInterval(updateTimer, 1000);
+        })();
+
+        // ---------- 题目数据 ----------
+        const questions = [
+            // 语言 (A)
+            { id: 1, text: "我擅长用我的语言说服对方", category: "A" },
+            { id: 2, text: "我能清晰流畅地表达复杂想法", category: "A" },
+            { id: 3, text: "我善于用文字打动他人", category: "A" },
+            { id: 4, text: "我喜欢写作并享受用词造句", category: "A" },
+            // 逻辑-算数 (B)
+            { id: 5, text: "我擅长解决逻辑谜题", category: "B" },
+            { id: 6, text: "我能快速进行心算", category: "B" },
+            { id: 7, text: "我喜欢分析数据和发现规律", category: "B" },
+            { id: 8, text: "我善于用推理解决问题", category: "B" },
+            // 空间 (C)
+            { id: 9, text: "我擅长在脑海中旋转三维物体", category: "C" },
+            { id: 10, text: "我能轻松看懂地图和图表", category: "C" },
+            { id: 11, text: "我善于想象物体不同角度的样子", category: "C" },
+            { id: 12, text: "我喜欢设计或搭建东西", category: "C" },
+            // 内省 (D)
+            { id: 13, text: "我擅长识别和理解自己的情绪", category: "D" },
+            { id: 14, text: "我清楚自己的优点和缺点", category: "D" },
+            { id: 15, text: "我经常反思自己的行为和动机", category: "D" },
+            { id: 16, text: "我能够很好地自我激励", category: "D" },
+            // 人际 (E)
+            { id: 17, text: "我善于理解他人的感受", category: "E" },
+            { id: 18, text: "我能轻松与陌生人建立联系", category: "E" },
+            { id: 19, text: "我擅长调解冲突", category: "E" },
+            { id: 20, text: "我喜欢团队合作并发挥每个人的长处", category: "E" },
+            // 身体-动觉 (F)
+            { id: 21, text: "我擅长需要手眼协调的任务", category: "F" },
+            { id: 22, text: "我擅长流畅准确地完成一系列动作", category: "F" },
+            { id: 23, text: "我学跳舞或运动很快", category: "F" },
+            { id: 24, text: "我喜欢动手制作东西", category: "F" },
+            // 音乐 (G)
+            { id: 25, text: "我擅长跟随音乐的节拍", category: "G" },
+            { id: 26, text: "我能辨别音高和旋律", category: "G" },
+            { id: 27, text: "我经常在脑海中回响音乐", category: "G" },
+            { id: 28, text: "我喜欢创作或改编音乐", category: "G" },
+            // 自然 (H)
+            { id: 29, text: "我擅长判断动物的需求", category: "H" },
+            { id: 30, text: "我能记住不同植物的名称和特征", category: "H" },
+            { id: 31, text: "我喜欢观察自然现象", category: "H" },
+            { id: 32, text: "我善于照顾植物或宠物", category: "H" },
+            // 创造 (I)
+            { id: 33, text: "我经常产生新颖的想法", category: "I" },
+            { id: 34, text: "我善于从不同角度看问题", category: "I" },
+            { id: 35, text: "我喜欢尝试新方法解决问题", category: "I" },
+            { id: 36, text: "我有丰富的想象力", category: "I" },
+            // 美学 (J)
+            { id: 37, text: "我对美的事物有强烈感受", category: "J" },
+            { id: 38, text: "我能欣赏不同风格的艺术作品", category: "J" },
+            { id: 39, text: "我善于布置环境使其和谐", category: "J" },
+            { id: 40, text: "我经常被自然或人造的美景打动", category: "J" }
+        ];
+
+        const options = ["非常符合", "很符合", "部分符合", "不太符合", "完全不符合"];
+        const optionScores = [5, 4, 3, 2, 1]; // 5点量表正向计分
+
+        // 维度定义（汉字标签用于雷达图）
+        const talentCategories = {
+            A: { name: "语言", maxScore: 20, desc: "语言天赋指运用口头和书面语言的能力，擅长表达、说服和写作。" },
+            B: { name: "逻辑", maxScore: 20, desc: "逻辑-算数天赋指处理数字、识别模式和进行逻辑推理的能力。" },
+            C: { name: "空间", maxScore: 20, desc: "空间天赋指在脑海中想象和操作空间关系的能力，如设计、导航。" },
+            D: { name: "内省", maxScore: 20, desc: "内省天赋指深入理解自己的情感、动机和内心世界的能力。" },
+            E: { name: "人际", maxScore: 20, desc: "人际天赋指理解他人、与他人有效合作和解决冲突的能力。" },
+            F: { name: "身体", maxScore: 20, desc: "身体-动觉天赋指用身体表达想法或技能的能力，如运动、舞蹈、手工。" },
+            G: { name: "音乐", maxScore: 20, desc: "音乐天赋指感知、辨别和表达音乐元素（如音高、节奏）的能力。" },
+            H: { name: "自然", maxScore: 20, desc: "自然天赋指识别和分类自然界物种（动植物、矿物）的能力。" },
+            I: { name: "创造", maxScore: 20, desc: "创造天赋指产生新颖想法、突破常规思维的能力。" },
+            J: { name: "美学", maxScore: 20, desc: "美学天赋指对美的敏感和创造美的能力，包括艺术鉴赏和设计。" }
+        };
+
+        // 状态变量
+        let currentQuestionIndex = 0;
+        let answers = {};
+
+        // DOM 元素
+        const startPage = document.getElementById("start-page");
+        const quizPage = document.getElementById("quiz-page");
+        const resultPage = document.getElementById("result-page");
+        const startTestBtn = document.getElementById("start-test-btn");
+        const prevBtn = document.getElementById("prev-btn");
+        const nextBtn = document.getElementById("next-btn");
+        const restartBtn = document.getElementById("restart-btn");
+        const progressText = document.getElementById("progress-text");
+        const progressBar = document.getElementById("progress-bar");
+        const questionText = document.getElementById("question-text");
+        const optionsList = document.getElementById("options-list");
+        const resultSummary = document.getElementById("result-summary");
+        const talentScoresContainer = document.getElementById("talent-scores");
+        const radarBackground = document.getElementById("radar-background");
+        const radarPolygon = document.getElementById("radar-polygon");
+        const radarLabels = document.getElementById("radar-labels");
+
+        // 加载/保存答案
+        function loadAnswers() {
+            const saved = localStorage.getItem("talentTestAnswers");
+            if (saved) {
+                try {
+                    answers = JSON.parse(saved);
+                } catch (e) {
+                    answers = {};
+                }
+            } else {
+                answers = {};
+            }
+        }
+        function saveAnswers() {
+            localStorage.setItem("talentTestAnswers", JSON.stringify(answers));
+        }
+
+        // 开始测试
+        function startTest() {
+            loadAnswers();
+            currentQuestionIndex = 0;
+            startPage.classList.remove("active");
+            quizPage.classList.add("active");
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const question = questions[currentQuestionIndex];
+            progressText.textContent = `${currentQuestionIndex + 1} / ${questions.length}`;
+            progressBar.style.width = `${((currentQuestionIndex + 1) / questions.length) * 100}%`;
+            questionText.textContent = question.text;
+            optionsList.innerHTML = "";
+
+            options.forEach((option, idx) => {
+                const li = document.createElement("li");
+                li.className = "option-item";
+                li.textContent = option;
+                li.addEventListener("click", () => selectOption(idx));
+                if (answers[question.id] === idx) {
+                    li.classList.add("selected");
+                }
+                optionsList.appendChild(li);
+            });
+
+            prevBtn.disabled = currentQuestionIndex === 0;
+            nextBtn.textContent = currentQuestionIndex === questions.length - 1 ? "完成" : "下一题";
+        }
+
+        function selectOption(optionIndex) {
+            const question = questions[currentQuestionIndex];
+            answers[question.id] = optionIndex;
+            saveAnswers();
+            // 更新高亮
+            const items = optionsList.querySelectorAll(".option-item");
+            items.forEach((item, idx) => {
+                if (idx === optionIndex) item.classList.add("selected");
+                else item.classList.remove("selected");
+            });
+            // 自动跳转
+            if (currentQuestionIndex < questions.length - 1) {
+                goToNextQuestion();
+            } else {
+                calculateResults();
+                showResults();
+            }
+        }
+
+        function goToPrevQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                renderQuestion();
+            }
+        }
+
+        function goToNextQuestion() {
+            const question = questions[currentQuestionIndex];
+            if (answers[question.id] === undefined) {
+                alert("请先选择当前题目的选项");
+                return;
+            }
+            if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                renderQuestion();
+            } else {
+                calculateResults();
+                showResults();
+            }
+        }
+
+        // 计算分数和常模百分位
+        function calculateResults() {
+            const scores = {};
+            for (let key in talentCategories) scores[key] = 0;
+
+            questions.forEach(q => {
+                const ansIdx = answers[q.id];
+                if (ansIdx !== undefined) {
+                    scores[q.category] += optionScores[ansIdx];
+                }
+            });
+
+            function percentile(score) {
+                if (score < 8) return 10;
+                if (score < 12) return 30;
+                if (score < 15) return 60;
+                if (score < 18) return 85;
+                return 98;
+            }
+
+            const results = {};
+            for (let key in talentCategories) {
+                const raw = scores[key];
+                results[key] = {
+                    raw: raw,
+                    percentile: percentile(raw),
+                    level: raw >= 16 ? "非常擅长" : raw >= 12 ? "擅长" : raw >= 8 ? "一般" : "不擅长"
+                };
+            }
+            return results;
+        }
+
+        // 绘制雷达图背景网格
+        function drawRadarBackground(keys, maxScore = 20) {
+            const centerX = 200, centerY = 200, radius = 150;
+            const numAxes = keys.length;
+            const angleStep = (2 * Math.PI) / numAxes;
+
+            let bgHtml = '';
+
+            // 绘制从中心到顶点的轴线（灰色）
+            for (let i = 0; i < numAxes; i++) {
+                const angle = -Math.PI / 2 + i * angleStep;
+                const x = centerX + radius * Math.cos(angle);
+                const y = centerY + radius * Math.sin(angle);
+                bgHtml += `<line x1="${centerX}" y1="${centerY}" x2="${x}" y2="${y}" stroke="#ccc" stroke-width="1" stroke-dasharray="4,4" />`;
+            }
+
+            // 绘制同心多边形 (20%, 40%, 60%, 80%, 100%)
+            for (let level = 0.2; level <= 1; level += 0.2) {
+                const points = [];
+                for (let i = 0; i < numAxes; i++) {
+                    const angle = -Math.PI / 2 + i * angleStep;
+                    const x = centerX + radius * level * Math.cos(angle);
+                    const y = centerY + radius * level * Math.sin(angle);
+                    points.push(`${x},${y}`);
+                }
+                bgHtml += `<polygon points="${points.join(' ')}" fill="none" stroke="#ddd" stroke-width="1" stroke-dasharray="2,2" />`;
+            }
+
+            radarBackground.innerHTML = bgHtml;
+        }
+
+        // 绘制雷达图数据及标签
+        function drawRadarChart(results) {
+            const centerX = 200, centerY = 200, radius = 150;
+            const keys = Object.keys(talentCategories);
+            const numAxes = keys.length;
+            const angleStep = (2 * Math.PI) / numAxes;
+
+            // 绘制背景网格（先清除再画）
+            drawRadarBackground(keys);
+
+            // 数据多边形
+            const points = [];
+            keys.forEach((key, i) => {
+                const angle = -Math.PI / 2 + i * angleStep;
+                const scoreRatio = results[key].raw / talentCategories[key].maxScore;
+                const x = centerX + radius * scoreRatio * Math.cos(angle);
+                const y = centerY + radius * scoreRatio * Math.sin(angle);
+                points.push(`${x},${y}`);
+            });
+            radarPolygon.setAttribute("points", points.join(" "));
+
+            // 清除旧标签
+            radarLabels.innerHTML = "";
+
+            // 添加汉字标签
+            keys.forEach((key, i) => {
+                const angle = -Math.PI / 2 + i * angleStep;
+                const x = centerX + (radius + 25) * Math.cos(angle);
+                const y = centerY + (radius + 25) * Math.sin(angle);
+                const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                text.setAttribute("x", x);
+                text.setAttribute("y", y);
+                text.setAttribute("text-anchor", "middle");
+                text.setAttribute("dominant-baseline", "middle");
+                text.setAttribute("fill", "#8a56d1");
+                text.setAttribute("font-size", "12");
+                text.textContent = talentCategories[key].name; // 汉字
+                radarLabels.appendChild(text);
+            });
+        }
+
+        // 显示结果
+        function showResults() {
+            const results = calculateResults();
+            quizPage.classList.remove("active");
+            resultPage.classList.add("active");
+
+            // 总结语
+            const sorted = Object.entries(results).sort((a, b) => b[1].raw - a[1].raw);
+            const top3 = sorted.slice(0, 3).map(item => talentCategories[item[0]].name);
+            const bottom3 = sorted.slice(-3).map(item => talentCategories[item[0]].name);
+            resultSummary.textContent = `你最具有 ${top3.join("、")} 天赋，而 ${bottom3.join("、")} 天赋相对较弱。`;
+
+            // 渲染分数条
+            talentScoresContainer.innerHTML = "";
+            for (let [key, value] of Object.entries(talentCategories)) {
+                const score = results[key].raw;
+                const percent = results[key].percentile;
+                const level = results[key].level;
+                const widthPercent = (score / value.maxScore) * 100;
+
+                const div = document.createElement("div");
+                div.className = "talent-item";
+                div.innerHTML = `
+                    <div class="talent-label">${value.name}</div>
+                    <div class="talent-bar-container">
+                        <div class="talent-bar" style="width: ${widthPercent}%"></div>
+                    </div>
+                    <div class="talent-level">${score}分  <span class="percentile-badge">高于${percent}%用户</span></div>
+                `;
+                talentScoresContainer.appendChild(div);
+
+                const descDiv = document.createElement("div");
+                descDiv.className = "talent-desc";
+                descDiv.innerHTML = `<strong>${value.name}：</strong>${value.desc} ${level}，高于${percent}%的参与者。`;
+                talentScoresContainer.appendChild(descDiv);
+            }
+
+            drawRadarChart(results);
+        }
+
+        // 重新测试
+        function restartTest() {
+            localStorage.removeItem("talentTestAnswers");
+            answers = {};
+            resultPage.classList.remove("active");
+            startPage.classList.add("active");
+        }
+
+        // 绑定事件
+        startTestBtn.addEventListener("click", startTest);
+        prevBtn.addEventListener("click", goToPrevQuestion);
+        nextBtn.addEventListener("click", goToNextQuestion);
+        restartBtn.addEventListener("click", restartTest);
+    </script>
+</body>
+</html>
