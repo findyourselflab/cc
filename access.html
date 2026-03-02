@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>正在验证...</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: #f5f7fa;
+        }
+        .box {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            text-align: center;
+            max-width: 400px;
+        }
+        .error {
+            color: #e53e3e;
+        }
+        .loading {
+            color: #4a5568;
+        }
+    </style>
+</head>
+<body>
+    <div class="box" id="message">
+        <p class="loading">正在验证卡密，请稍候...</p>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+
+        if (!code) {
+            document.getElementById('message').innerHTML = '<p class="error">❌ 缺少卡密参数</p>';
+            throw new Error('Missing code');
+        }
+
+        // 使用你的 Vercel API 地址
+        fetch(`https://rpi-api-rust.vercel.app/api/validate?code=${encodeURIComponent(code)}`)
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(data => {
+                        throw new Error(data.error || '验证失败');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.link) {
+                    window.location.href = data.link;
+                } else {
+                    document.getElementById('message').innerHTML = '<p class="error">❌ 返回数据错误</p>';
+                }
+            })
+            .catch(error => {
+                document.getElementById('message').innerHTML = `
+                    <p class="error">❌ ${error.message}</p>
+                    <p style="margin-top:20px;">请检查卡密是否正确，或联系客服。</p>
+                `;
+            });
+    </script>
+</body>
+</html>
