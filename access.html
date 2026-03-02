@@ -43,7 +43,6 @@
             throw new Error('Missing code');
         }
 
-        // 调用你的 Vercel API（请确认域名正确）
         fetch(`https://rpi-api-rust.vercel.app/api/validate?code=${code}`)
             .then(response => {
                 if (!response.ok) {
