@@ -12,7 +12,7 @@
         if (!code) {
             document.getElementById('msg').innerText = '缺少卡密';
         } else {
-            fetch('https://rpi-api-rust.vercel.app/api/validate?code=' + code)
+            fetch('https://api.findyourself.cc/api/validate?code=' + code)
                 .then(r => r.json())
                 .then(data => {
                     if (data.link) {
